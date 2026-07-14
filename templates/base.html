@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}AI 黑客松计分{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#18181b',
+            line: '#e4e4e7',
+            panel: '#ffffff',
+            muted: '#71717a',
+            brand: '#2563eb',
+            accent: '#dc2626'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen bg-zinc-100 text-ink antialiased">
+  <nav class="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <a href="{{ url_for('leaderboard') }}" class="flex items-center gap-3">
+        <span class="grid h-9 w-9 place-items-center rounded bg-ink text-sm font-bold text-white">FF</span>
+        <span><span class="block text-sm font-semibold leading-4">提前上岗</span><span class="block text-xs text-muted">FastForward Scoring</span></span>
+      </a>
+      <div class="flex flex-wrap items-center gap-2 text-sm">
+        <a class="rounded px-3 py-2 text-zinc-700 hover:bg-zinc-100 hover:text-ink" href="{{ url_for('leaderboard') }}">榜单</a>
+        <a class="rounded px-3 py-2 text-zinc-700 hover:bg-zinc-100 hover:text-ink" href="{{ url_for('countdown') }}">总倒计时</a>
+        <a class="rounded px-3 py-2 text-zinc-700 hover:bg-zinc-100 hover:text-ink" href="{{ url_for('timer') }}">倒计时</a>
+        <a class="rounded px-3 py-2 text-zinc-700 hover:bg-zinc-100 hover:text-ink" href="{{ url_for('peer') }}">队长互评</a>
+        <a class="rounded px-3 py-2 text-zinc-700 hover:bg-zinc-100 hover:text-ink" href="{{ url_for('tie_vote') }}">平票投票</a>
+        {% if g.is_admin %}<a class="rounded bg-zinc-900 px-3 py-2 text-white hover:bg-zinc-700" href="{{ url_for('admin') }}">管理员</a>{% endif %}
+        {% if g.user %}
+          <span class="rounded border border-line bg-white px-3 py-2 text-zinc-600">{{ g.user.name }}</span>
+          <a class="rounded px-3 py-2 text-zinc-500 hover:bg-zinc-100 hover:text-ink" href="{{ url_for('logout') }}">退出</a>
+        {% else %}
+          <a class="rounded bg-brand px-3 py-2 text-white hover:bg-blue-700" href="{{ url_for('login') }}">登录</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+  <main class="mx-auto max-w-7xl px-4 py-6 sm:py-8">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="mb-5 space-y-2">
+          {% for message in messages %}<div class="rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">{{ message }}</div>{% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

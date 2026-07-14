@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}登录{% endblock %}
+{% block content %}
+<div class="mx-auto grid max-w-5xl overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-line lg:grid-cols-[0.9fr_1.1fr]">
+  <div class="bg-ink p-8 text-white sm:p-10">
+    <p class="text-sm font-medium uppercase tracking-[0.28em] text-zinc-400">FastForward</p>
+    <h1 class="mt-4 text-4xl font-black leading-tight">AI 员工<br>提前上岗</h1>
+    <p class="mt-5 text-zinc-300">登录后根据身份进入管理员后台、队长互评或现场平票投票。</p>
+    <div class="mt-8 grid gap-3 text-sm text-zinc-300">
+      <div class="rounded-2xl bg-white/10 p-4">公司内飞书用户可参与平票加赛</div>
+      <div class="rounded-2xl bg-white/10 p-4">队长只能评价系统分配的队伍</div>
+      <div class="rounded-2xl bg-white/10 p-4">管理员负责队伍、评委和冠军确认</div>
+    </div>
+  </div>
+  <div class="p-8 sm:p-10">
+    <h2 class="text-2xl font-bold">登录计分系统</h2>
+    <p class="mt-2 text-sm text-muted">正式现场使用飞书应用登录；本地开发可用测试登录快速模拟身份。</p>
+    <div class="mt-6">
+      {% if feishu_ready %}
+        <a href="{{ url_for('feishu_start') }}" class="inline-flex w-full items-center justify-center rounded-xl bg-brand px-5 py-3 font-semibold text-white shadow-lg shadow-blue-200 hover:bg-blue-700">飞书登录</a>
+      {% else %}
+        <div class="rounded-2xl border border-dashed border-line bg-zinc-50 px-4 py-4 text-sm text-muted">尚未配置 FEISHU_APP_ID / FEISHU_APP_SECRET，飞书登录暂不可用。</div>
+      {% endif %}
+    </div>
+    {% if allow_dev %}
+    <form action="{{ url_for('dev_login') }}" method="post" class="mt-8 space-y-4 border-t border-line pt-6">
+      <div><h3 class="font-semibold">本地测试登录</h3><p class="text-xs text-muted">开发阶段使用，正式现场可关闭。</p></div>
+      <label class="block text-sm font-medium text-zinc-700">姓名<input name="name" class="mt-1 w-full rounded-xl border border-line px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-blue-100" value="徐赫铖"></label>
+      <label class="block text-sm font-medium text-zinc-700">open_id<input name="open_id" class="mt-1 w-full rounded-xl border border-line px-4 py-3 font-mono text-sm outline-none focus:border-brand focus:ring-4 focus:ring-blue-100" value="ou_admin"></label>
+      <label class="flex items-center gap-3 rounded-xl border border-line p-4 text-sm"><input type="checkbox" name="admin" value="1" checked class="h-4 w-4 rounded"> 作为管理员登录</label>
+      <button class="w-full rounded-xl bg-ink px-5 py-3 font-semibold text-white hover:bg-zinc-700">进入系统</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}队长互评{% endblock %}
+{% block content %}
+<div class="mb-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-line sm:p-8">
+  <p class="text-sm font-semibold uppercase tracking-[0.25em] text-brand">Captain Review</p>
+  <h1 class="mt-3 text-4xl font-black tracking-tight">队长互评</h1>
+  <p class="mt-3 max-w-2xl text-muted">只评价报名顺序后面的 M 支队伍，开放期间可反复修改，锁定后只读。</p>
+</div>
+{% if not g.user %}
+  <div class="rounded-2xl border border-line bg-white p-8 text-muted shadow-sm">请先登录。</div>
+{% elif not team %}
+  <div class="rounded-2xl border border-line bg-white p-8 shadow-sm">
+    <div class="text-lg font-bold">未绑定队长身份</div>
+    <p class="mt-2 text-muted">当前飞书身份没有绑定任何队伍队长权限，请联系管理员。</p>
+  </div>
+{% else %}
+  <div class="rounded-2xl border border-line bg-white p-6 shadow-sm">
+    <div class="flex flex-col gap-4 border-b border-line pb-5 sm:flex-row sm:items-center sm:justify-between">
+      <div><p class="text-sm text-muted">你正在代表</p><div class="text-2xl font-black">{{ team.name }}</div></div>
+      <span class="w-fit rounded-full px-4 py-2 text-sm font-semibold {% if status == 'open' %}bg-emerald-50 text-emerald-700{% elif status == 'locked' %}bg-zinc-100 text-zinc-700{% else %}bg-amber-50 text-amber-700{% endif %}">状态：{{ status }}</span>
+    </div>
+    {% if status == 'not_started' %}
+      <p class="mt-6 text-muted">互评尚未开始。</p>
+    {% elif not targets %}
+      <p class="mt-6 text-muted">暂无需要评价的队伍。</p>
+    {% else %}
+      <form method="post" class="mt-6 space-y-4">
+        {% for target in targets %}
+          <div class="rounded-2xl border border-line p-5 transition hover:border-zinc-300 hover:shadow-sm">
+            <div class="flex items-center justify-between gap-4"><div><div class="text-xs font-medium text-muted">报名顺序 #{{ target.order_index }}</div><div class="mt-1 text-lg font-bold">{{ target.name }}</div></div></div>
+            <div class="mt-4 grid gap-3 sm:grid-cols-2">
+              <label class="flex cursor-pointer items-center gap-3 rounded-xl border p-4 hover:bg-emerald-50"><input type="radio" name="vote_{{ target.id }}" value="1" {% if votes.get(target.id) == 1 %}checked{% endif %} {% if status != 'open' %}disabled{% endif %}> <span class="font-medium text-emerald-700">能上岗</span></label>
+              <label class="flex cursor-pointer items-center gap-3 rounded-xl border p-4 hover:bg-zinc-50"><input type="radio" name="vote_{{ target.id }}" value="0" {% if votes.get(target.id, 0) == 0 %}checked{% endif %} {% if status != 'open' %}disabled{% endif %}> <span class="font-medium text-zinc-700">不能上岗</span></label>
+            </div>
+          </div>
+        {% endfor %}
+        {% if status == 'open' %}<button class="rounded-xl bg-ink px-6 py-3 font-semibold text-white shadow-sm hover:bg-zinc-700">保存互评</button>{% else %}<p class="text-sm text-muted">互评已锁定，只能查看。</p>{% endif %}
+      </form>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

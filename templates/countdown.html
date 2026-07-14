@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}总倒计时{% endblock %}
+{% block content %}
+<div class="relative min-h-[calc(100vh-140px)] overflow-hidden rounded-[2rem] bg-[#f8fafc] shadow-xl ring-1 ring-line">
+  <div class="absolute inset-0" style="background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(241,245,249,.88)), radial-gradient(circle at 18% 18%, rgba(37,99,235,.18), transparent 30%), radial-gradient(circle at 80% 18%, rgba(244,63,94,.12), transparent 28%), radial-gradient(circle at 55% 85%, rgba(16,185,129,.14), transparent 34%);"></div>
+  <div class="absolute -left-20 top-20 h-72 w-72 rounded-full border border-blue-200/70"></div>
+  <div class="absolute -right-16 bottom-10 h-96 w-96 rounded-full border border-rose-200/70"></div>
+  <div class="absolute left-1/2 top-10 h-24 w-24 -translate-x-1/2 rounded-full bg-white/70 shadow-xl"></div>
+
+  <section class="relative z-10 flex min-h-[calc(100vh-140px)] flex-col justify-between p-6 sm:p-10">
+    <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <p class="text-sm font-black uppercase tracking-[0.36em] text-blue-700">Event Countdown</p>
+        <h1 id="countdownTitle" class="mt-3 text-4xl font-black tracking-tight text-zinc-950 sm:text-6xl">{{ countdown_title }}</h1>
+      </div>
+      <div class="rounded-2xl border border-white/80 bg-white/80 px-5 py-4 text-right shadow-sm backdrop-blur">
+        <div class="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Target</div>
+        <div id="targetText" class="mt-1 font-mono text-sm font-bold text-zinc-800">{{ target }}</div>
+      </div>
+    </header>
+
+    <div class="mx-auto w-full max-w-6xl py-10">
+      <div id="countdownGrid" class="grid gap-4 sm:grid-cols-4">
+        <div class="time-card rounded-[1.75rem] border border-white/80 bg-white/85 p-6 text-center shadow-xl backdrop-blur">
+          <div id="days" class="tabular-nums text-6xl font-black text-zinc-950 sm:text-7xl">00</div>
+          <div class="mt-3 text-sm font-bold uppercase tracking-[0.28em] text-blue-700">Days</div>
+        </div>
+        <div class="time-card rounded-[1.75rem] border border-white/80 bg-white/85 p-6 text-center shadow-xl backdrop-blur">
+          <div id="hours" class="tabular-nums text-6xl font-black text-zinc-950 sm:text-7xl">00</div>
+          <div class="mt-3 text-sm font-bold uppercase tracking-[0.28em] text-rose-700">Hours</div>
+        </div>
+        <div class="time-card rounded-[1.75rem] border border-white/80 bg-white/85 p-6 text-center shadow-xl backdrop-blur">
+          <div id="minutes" class="tabular-nums text-6xl font-black text-zinc-950 sm:text-7xl">00</div>
+          <div class="mt-3 text-sm font-bold uppercase tracking-[0.28em] text-emerald-700">Minutes</div>
+        </div>
+        <div class="time-card rounded-[1.75rem] border border-white/80 bg-white/85 p-6 text-center shadow-xl backdrop-blur">
+          <div id="seconds" class="tabular-nums text-6xl font-black text-zinc-950 sm:text-7xl">00</div>
+          <div class="mt-3 text-sm font-bold uppercase tracking-[0.28em] text-zinc-700">Seconds</div>
+        </div>
+      </div>
+      <div class="mx-auto mt-8 h-4 max-w-5xl overflow-hidden rounded-full border border-white/80 bg-white/80 shadow-inner">
+        <div id="pulseBar" class="h-full w-full rounded-full bg-zinc-900 transition-all duration-500"></div>
+      </div>
+    </div>
+
+    <footer class="grid gap-3 sm:grid-cols-3">
+      <div class="rounded-2xl border border-white/80 bg-white/80 p-5 shadow-sm backdrop-blur"><div class="text-sm text-muted">当前状态</div><div id="statusText" class="mt-1 text-2xl font-black">倒计时中</div></div>
+      <div class="rounded-2xl border border-white/80 bg-white/80 p-5 shadow-sm backdrop-blur"><div class="text-sm text-muted">目标时间</div><div id="fullTargetText" class="mt-1 text-xl font-black">{{ target }}</div></div>
+      <div class="rounded-2xl border border-white/80 bg-white/80 p-5 shadow-sm backdrop-blur"><div class="text-sm text-muted">设置入口</div><div class="mt-1 text-xl font-black">管理员后台</div></div>
+    </footer>
+  </section>
+</div>
+
+<script>
+  const targetValue = {{ target|tojson }};
+  const targetDate = new Date(targetValue);
+  const initialSpan = Math.max(1, targetDate.getTime() - Date.now());
+  const fields = {
+    days: document.getElementById('days'),
+    hours: document.getElementById('hours'),
+    minutes: document.getElementById('minutes'),
+    seconds: document.getElementById('seconds'),
+  };
+  const statusText = document.getElementById('statusText');
+  const pulseBar = document.getElementById('pulseBar');
+  const targetText = document.getElementById('targetText');
+  const fullTargetText = document.getElementById('fullTargetText');
+
+  function pad(value) {
+    return String(value).padStart(2, '0');
+  }
+
+  function renderCountdown() {
+    const diff = targetDate.getTime() - Date.now();
+    const remaining = Math.max(0, diff);
+    const totalSeconds = Math.floor(remaining / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    fields.days.textContent = pad(days);
+    fields.hours.textContent = pad(hours);
+    fields.minutes.textContent = pad(minutes);
+    fields.seconds.textContent = pad(seconds);
+    statusText.textContent = remaining === 0 ? '已经到点' : '倒计时中';
+    pulseBar.style.width = `${Math.max(0, Math.min(100, remaining / initialSpan * 100))}%`;
+    pulseBar.className = remaining === 0 ? 'h-full rounded-full bg-red-600 transition-all duration-500' : 'h-full rounded-full bg-zinc-900 transition-all duration-500';
+  }
+
+  if (!Number.isNaN(targetDate.getTime())) {
+    targetText.textContent = targetDate.toLocaleString('zh-CN', { hour12: false });
+    fullTargetText.textContent = targetDate.toLocaleString('zh-CN', { hour12: false });
+  }
+  renderCountdown();
+  setInterval(renderCountdown, 1000);
+</script>
+{% endblock %}

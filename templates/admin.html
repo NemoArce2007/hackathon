@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+{% block title %}管理员后台{% endblock %}
+{% block content %}
+<div class="mb-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-line sm:p-8">
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[0.25em] text-brand">Admin Console</p>
+      <h1 class="mt-3 text-4xl font-black tracking-tight">管理员后台</h1>
+      <p class="mt-3 text-muted">录入队伍、搜索绑定队长、控制互评、代录评委票，并完成平票加赛与冠军确认。</p>
+    </div>
+    <div class="grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
+      <div class="rounded-2xl bg-zinc-100 px-5 py-4"><div class="text-2xl font-black">{{ teams|length }}</div><div class="text-xs text-muted">队伍</div></div>
+      <div class="rounded-2xl bg-zinc-100 px-5 py-4"><div class="text-2xl font-black">{{ judges|length }}</div><div class="text-xs text-muted">评委</div></div>
+      <div class="rounded-2xl bg-zinc-100 px-5 py-4"><div class="text-2xl font-black">{{ peer_status }}</div><div class="text-xs text-muted">互评</div></div>
+      <div class="rounded-2xl bg-zinc-100 px-5 py-4"><div class="text-2xl font-black">{% if champion_id %}已确认{% else %}未确认{% endif %}</div><div class="text-xs text-muted">冠军</div></div>
+    </div>
+  </div>
+</div>
+
+<section class="mb-6 rounded-2xl border border-line bg-white shadow-sm">
+  <div class="border-b border-line p-5">
+    <h2 class="text-xl font-bold">总倒计时设置</h2>
+    <p class="mt-1 text-sm text-muted">用于独立大屏页面，显示距离指定日期还剩多少天、小时、分钟、秒。</p>
+  </div>
+  <form action="{{ url_for('update_countdown') }}" method="post" class="grid gap-3 p-5 text-sm md:grid-cols-[1fr_260px_auto]">
+    <input name="countdown_title" value="{{ countdown_title }}" placeholder="倒计时标题" class="rounded-xl border border-line px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-blue-100" required>
+    <input name="countdown_target" type="datetime-local" value="{{ countdown_target }}" class="rounded-xl border border-line px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-blue-100" required>
+    <button class="rounded-xl bg-ink px-5 py-3 font-semibold text-white hover:bg-zinc-700">保存设置</button>
+  </form>
+  <div class="px-5 pb-5 text-sm text-muted">当前页面：<a class="font-semibold text-brand hover:underline" href="{{ url_for('countdown') }}">/countdown</a></div>
+</section>
+
+<div class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+  <section class="rounded-2xl border border-line bg-white shadow-sm">
+    <div class="border-b border-line p-5">
+      <h2 class="text-xl font-bold">队伍管理</h2>
+      <p class="mt-1 text-sm text-muted">支持新增、编辑、删除队伍，并可直接搜索飞书通讯录绑定队长。</p>
+    </div>
+    <div class="space-y-5 p-5">
+      <form action="{{ url_for('admin') }}" method="get" class="grid gap-3 rounded-2xl border border-line bg-zinc-50 p-4 text-sm sm:grid-cols-[1fr_auto]">
+        {% if edit_team %}<input type="hidden" name="edit_team_id" value="{{ edit_team.id }}">{% endif %}
+        {% if edit_judge %}<input type="hidden" name="edit_judge_id" value="{{ edit_judge.id }}">{% endif %}
+        <input name="captain_query" value="{{ captain_query }}" placeholder="搜索飞书通讯录姓名 / 邮箱" class="rounded-xl border border-line bg-white px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-blue-100">
+        <button class="rounded-xl border border-line bg-white px-5 py-3 font-semibold hover:bg-zinc-100">搜索队长</button>
+      </form>
+
+      <div class="rounded-2xl border border-dashed border-line p-4">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <div class="font-semibold text-zinc-900">队长搜索结果</div>
+            <div class="text-sm text-muted">{% if captain_query %}按“{{ captain_query }}”检索飞书通讯录{% else %}输入姓名或邮箱后，直接搜索飞书通讯录{% endif %}</div>
+          </div>
+          {% if edit_team or captain_query or edit_judge %}<a href="{{ url_for('admin') }}" class="text-sm font-semibold text-brand hover:underline">清空筛选</a>{% endif %}
+        </div>
+        {% if captain_search_error %}
+          <div class="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">{{ captain_search_error }}</div>
+        {% endif %}
+        <div class="mt-4 grid gap-3">
+          {% if captain_query %}
+            {% for user in captain_candidates %}
+              <button
+                type="button"
+                class="captain-bind flex items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3 text-left hover:border-brand hover:bg-blue-50"
+                data-open-id="{{ user.feishu_open_id }}"
+                data-name="{{ user.name }}"
+              >
+                <span>
+                  <span class="block font-semibold text-zinc-900">{{ user.name }}</span>
+                  <span class="block font-mono text-xs text-muted">{{ user.feishu_open_id }}</span>
+                  <span class="mt-1 block text-xs text-muted">
+                    {% if user.department %}{{ user.department }}{% else %}未返回部门{% endif %}
+                    {% if user.enterprise_email %} · {{ user.enterprise_email }}{% elif user.email %} · {{ user.email }}{% endif %}
+                    {% if user.is_cross_tenant %} · 外部成员{% endif %}
+                  </span>
+                </span>
+                <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-brand shadow-sm">绑定到表单</span>
+              </button>
+            {% else %}
+              <div class="rounded-2xl bg-zinc-50 px-4 py-6 text-sm text-muted">通讯录里没有找到匹配成员。请检查姓名、邮箱，或确认该成员在应用可见范围内。</div>
+            {% endfor %}
+          {% else %}
+            <div class="rounded-2xl bg-zinc-50 px-4 py-6 text-sm text-muted">输入队长姓名或邮箱后，这里会直接显示飞书通讯录搜索结果。</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <form action="{{ url_for('save_team') }}" method="post" class="grid gap-3 text-sm md:grid-cols-2 xl:grid-cols-3">
+        {% if edit_team %}<input type="hidden" name="team_id" value="{{ edit_team.id }}">{% endif %}
+        <input name="order_index" type="number" min="1" value="{{ edit_team.order_index if edit_team else '' }}" placeholder="报名顺序" class="rounded-xl border border-line px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-blue-100" required>
+        <input name="name" value="{{ edit_team.name if edit_team else '' }}" placeholder="队伍名" class="rounded-xl border border-line px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-blue-100" required>
+        <input id="captain_name_input" name="captain_name" value="{{ edit_team.captain_name if edit_team else '' }}" placeholder="队长姓名" class="rounded-xl border border-line px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-blue-100" required>
+        <input id="captain_open_id_input" name="captain_open_id" value="{{ edit_team.captain_open_id if edit_team else '' }}" placeholder="队长 open_id" class="rounded-xl border border-line px-4 py-3 font-mono text-xs outline-none focus:border-brand focus:ring-4 focus:ring-blue-100" required>
+        <label class="flex items-center gap-3 rounded-xl border border-line px-4 py-3">
+          <input type="checkbox" name="demand_vote" value="1" class="h-4 w-4 rounded" {% if edit_team and edit_team.demand_vote == 1 %}checked{% endif %}>
+          刚需票
+        </label>
+        <div class="flex gap-3">
+          <button class="flex-1 rounded-xl bg-ink px-5 py-3 font-semibold text-white hover:bg-zinc-700">{{ '保存修改' if edit_team else '新增队伍' }}</button>
+          {% if edit_team %}<a href="{{ url_for('admin') }}" class="rounded-xl border border-line px-5 py-3 font-semibold hover:bg-zinc-50">取消</a>{% endif %}
+        </div>
+      </form>
+
+      <div class="overflow-x-auto rounded-xl border border-line">
+        <table class="w-full min-w-[980px] text-left text-sm">
+          <thead class="bg-zinc-50 text-xs uppercase tracking-wider text-muted">
+            <tr><th class="px-4 py-3">顺序</th><th>队伍</th><th>队长</th><th>open_id</th><th>刚需</th><th>互评提交</th><th class="px-4 py-3 text-right">操作</th></tr>
+          </thead>
+          <tbody class="divide-y divide-line">
+            {% for team in teams %}
+            <tr>
+              <td class="px-4 py-3 font-bold">#{{ team.order_index }}</td>
+              <td class="font-semibold">{{ team.name }}</td>
+              <td>{{ team.captain_name }}</td>
+              <td class="font-mono text-xs text-muted">{{ team.captain_open_id }}</td>
+              <td><span class="rounded-full bg-blue-50 px-3 py-1 text-blue-700">{{ team.demand_vote }}</span></td>
+              <td>{{ peer_submissions.get(team.id, 0) }} / {{ peer_m }}</td>
+              <td class="px-4 py-3">
+                <div class="flex justify-end gap-2">
+                  <a href="{{ url_for('admin', edit_team_id=team.id) }}" class="rounded-lg border border-line px-3 py-2 font-semibold hover:bg-zinc-50">编辑</a>
+                  <form action="{{ url_for('delete_team', team_id=team.id) }}" method="post" onsubmit="return confirm('确认删除队伍 {{ team.name }} 吗？');">
+                    <button class="rounded-lg bg-red-600 px-3 py-2 font-semibold text-white hover:bg-red-700">删除</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="px-4 py-8 text-center text-muted">暂无队伍</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="rounded-2xl border border-line bg-white shadow-sm">
+    <div class="border-b border-line p-5">
+      <h2 class="text-xl font-bold">互评控制</h2>
+      <p class="mt-1 text-sm text-muted">M 必须满足 1 &lt;= M &lt; N / 2，可预览互评关系并查看提交明细。</p>
+    </div>
+    <div class="space-y-5 p-5">
+      <form action="{{ url_for('update_peer_settings') }}" method="post" class="flex gap-3">
+        <input type="hidden" name="action" value="set_m">
+        <input name="peer_m" type="number" min="1" value="{{ peer_m }}" class="w-28 rounded-xl border border-line px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-blue-100">
+        <button class="rounded-xl border border-line px-5 py-3 font-semibold hover:bg-zinc-50">设置 M</button>
+      </form>
+      <div class="rounded-2xl bg-zinc-50 p-4">
+        <div class="text-sm text-muted">当前状态</div>
+        <div class="mt-1 text-2xl font-black">{{ peer_status }}</div>
+      </div>
+      <div class="grid gap-3 sm:grid-cols-3">
+        {% for state, label in [('not_started', '重置'), ('open', '开启互评'), ('locked', '锁定互评')] %}
+        <form action="{{ url_for('update_peer_settings') }}" method="post">
+          <input type="hidden" name="action" value="{{ state }}">
+          <button class="w-full rounded-xl {% if state == 'open' %}bg-emerald-600 hover:bg-emerald-700{% elif state == 'locked' %}bg-amber-600 hover:bg-amber-700{% else %}bg-zinc-900 hover:bg-zinc-700{% endif %} px-4 py-3 font-semibold text-white">{{ label }}</button>
+        </form>
+        {% endfor %}
+      </div>
+
+      <div>
+        <div class="mb-3 font-semibold text-zinc-900">互评关系预览</div>
+        <div class="grid gap-3 text-sm">
+          {% for row in peer_assignment_rows %}
+          <div class="rounded-2xl border border-line p-4">
+            <div class="flex items-center justify-between gap-4">
+              <span class="font-semibold">{{ row.team.name }}</span>
+              <span class="text-muted">已提交 {{ row.submitted }} / {{ row.targets|length }}</span>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-2">
+              {% for target in row.targets %}
+                <span class="rounded-full px-3 py-1 {% if target.vote == 1 %}bg-emerald-50 text-emerald-700{% elif target.vote == 0 %}bg-zinc-100 text-zinc-700{% else %}bg-amber-50 text-amber-700{% endif %}">
+                  {{ target.team.name }} · {% if target.vote == 1 %}能上岗{% elif target.vote == 0 %}不能上岗{% else %}未提交{% endif %}
+                </span>
+              {% else %}
+                <span class="text-muted">暂无目标队伍</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% else %}
+          <div class="rounded-2xl bg-zinc-50 px-4 py-6 text-sm text-muted">暂无可预览的互评关系。</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<section class="mt-6 rounded-2xl border border-line bg-white shadow-sm">
+  <div class="border-b border-line p-5">
+    <h2 class="text-xl font-bold">评委管理与评委票</h2>
+    <p class="mt-1 text-sm text-muted">支持新增、编辑、删除评委，并按评委逐队录入是否能上岗。</p>
+  </div>
+  <div class="space-y-5 p-5">
+    <form action="{{ url_for('save_judge') }}" method="post" class="grid gap-3 text-sm sm:grid-cols-[140px_1fr_auto_auto]">
+      {% if edit_judge %}<input type="hidden" name="judge_id" value="{{ edit_judge.id }}">{% endif %}
+      <input name="order_index" type="number" min="1" value="{{ edit_judge.order_index if edit_judge else '' }}" placeholder="序号" class="rounded-xl border border-line px-4 py-3" required>
+      <input name="name" value="{{ edit_judge.name if edit_judge else '' }}" placeholder="评委姓名" class="rounded-xl border border-line px-4 py-3" required>
+      <button class="rounded-xl bg-ink px-5 py-3 font-semibold text-white hover:bg-zinc-700">{{ '保存修改' if edit_judge else '新增评委' }}</button>
+      {% if edit_judge %}<a href="{{ url_for('admin') }}" class="rounded-xl border border-line px-5 py-3 text-center font-semibold hover:bg-zinc-50">取消</a>{% endif %}
+    </form>
+
+    <div class="overflow-x-auto rounded-xl border border-line">
+      <table class="w-full min-w-[680px] text-left text-sm">
+        <thead class="bg-zinc-50 text-xs uppercase tracking-wider text-muted"><tr><th class="px-4 py-3">序号</th><th>评委</th><th class="px-4 py-3 text-right">操作</th></tr></thead>
+        <tbody class="divide-y divide-line">
+          {% for judge in judges %}
+          <tr>
+            <td class="px-4 py-3 font-bold">{{ judge.order_index }}</td>
+            <td class="font-semibold">{{ judge.name }}</td>
+            <td class="px-4 py-3">
+              <div class="flex justify-end gap-2">
+                <a href="{{ url_for('admin', edit_judge_id=judge.id) }}" class="rounded-lg border border-line px-3 py-2 font-semibold hover:bg-zinc-50">编辑</a>
+                <form action="{{ url_for('delete_judge', judge_id=judge.id) }}" method="post" onsubmit="return confirm('确认删除评委 {{ judge.name }} 吗？');">
+                  <button class="rounded-lg bg-red-600 px-3 py-2 font-semibold text-white hover:bg-red-700">删除</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3" class="px-4 py-8 text-center text-muted">暂无评委</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <form action="{{ url_for('save_judge_votes') }}" method="post" class="overflow-auto rounded-xl border border-line">
+      <table class="w-full min-w-[720px] text-left text-sm">
+        <thead class="bg-zinc-50 text-xs uppercase tracking-wider text-muted">
+          <tr><th class="px-4 py-3">评委</th>{% for team in teams %}<th>{{ team.name }}</th>{% endfor %}</tr>
+        </thead>
+        <tbody class="divide-y divide-line">
+          {% for judge in judges %}
+          <tr>
+            <td class="px-4 py-4 font-semibold">{{ judge.order_index }}. {{ judge.name }}</td>
+            {% for team in teams %}
+            <td><input class="h-5 w-5 rounded" type="checkbox" name="judge_{{ judge.id }}_team_{{ team.id }}" value="1" {% if judge_votes.get((judge.id, team.id)) == 1 %}checked{% endif %}></td>
+            {% endfor %}
+          </tr>
+          {% else %}
+          <tr><td class="px-4 py-8 text-muted" colspan="99">暂无评委</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if judges and teams %}<button class="m-4 rounded-xl bg-brand px-5 py-3 font-semibold text-white hover:bg-blue-700">保存评委票</button>{% endif %}
+    </form>
+  </div>
+</section>
+
+<section class="mt-6 rounded-2xl border border-line bg-white shadow-sm">
+  <div class="border-b border-line p-5">
+    <h2 class="text-xl font-bold">榜单、平票与冠军</h2>
+    <p class="mt-1 text-sm text-muted">查看当前排名，发现并列第一时开启加赛；关闭后可基于本轮最高票自动续下一轮。</p>
+  </div>
+  <div class="space-y-5 p-5">
+    {% if needs_tie_break %}
+      <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
+        当前普通总分第一名并列：{% for team in top_tied_teams %}<b>{{ team.name }}</b>{% if not loop.last %}、{% endif %}{% endfor %}。可以直接开启平票加赛。
+      </div>
+    {% elif champion_id %}
+      <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
+        冠军已确认
+        {% for team in teams %}{% if team.id|string == champion_id %}<b>{{ team.name }}</b>{% endif %}{% endfor %}
+        {% if champion_confirmed_at %}<span class="text-sm text-emerald-700">（{{ champion_confirmed_at }}）</span>{% endif %}
+      </div>
+    {% endif %}
+
+    <div class="grid gap-3 lg:grid-cols-[1fr_1fr]">
+      <div class="rounded-2xl border border-line p-4">
+        <div class="font-semibold text-zinc-900">当前榜单</div>
+        <div class="mt-3 space-y-3">
+          {% for row in rows %}
+          <div class="flex items-center justify-between rounded-2xl {% if loop.index == 1 %}bg-yellow-50{% else %}bg-zinc-50{% endif %} px-4 py-3">
+            <div>
+              <div class="font-semibold">{{ loop.index }}. {{ row.team.name }}</div>
+              <div class="text-xs text-muted">刚需 {{ row.demand_vote }} / 互评 {{ row.peer_votes }} / 评委 {{ row.judge_score }}</div>
+            </div>
+            <div class="text-2xl font-black">{{ row.total }}</div>
+          </div>
+          {% else %}
+          <div class="text-sm text-muted">暂无队伍。</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-line p-4">
+        <div class="font-semibold text-zinc-900">加赛操作</div>
+        <div class="mt-3 flex flex-wrap gap-3">
+          {% if not active_round %}
+          <form action="{{ url_for('create_tie_round') }}" method="post">
+            {% for team in top_tied_teams %}<input type="hidden" name="candidate_id" value="{{ team.id }}">{% endfor %}
+            <button class="rounded-xl bg-accent px-5 py-3 font-semibold text-white hover:bg-red-700">按当前并列第一开启加赛</button>
+          </form>
+          {% endif %}
+          {% if active_round %}
+          <form action="{{ url_for('close_tie_round', round_id=active_round.id) }}" method="post">
+            <button class="rounded-xl border border-line px-5 py-3 font-semibold hover:bg-zinc-50">关闭当前加赛</button>
+          </form>
+          {% endif %}
+        </div>
+
+        <form action="{{ url_for('confirm_champion') }}" method="post" class="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
+          <select name="team_id" class="rounded-xl border border-line px-4 py-3">
+            {% for team in teams %}<option value="{{ team.id }}" {% if team.id|string == champion_id %}selected{% endif %}>{{ team.name }}</option>{% endfor %}
+          </select>
+          <button class="rounded-xl bg-emerald-700 px-5 py-3 font-semibold text-white hover:bg-emerald-800">确认冠军</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="grid gap-3">
+      {% for round in rounds %}
+      <div class="rounded-2xl border border-line p-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div class="font-bold">第 {{ round.round_no }} 轮</div>
+            <div class="mt-1 text-sm text-muted">
+              状态：{{ round.status }}
+              {% if round.closed_at %} · 关闭时间 {{ round.closed_at }}{% endif %}
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            {% if round.status == 'closed' and round_top_map.get(round.id, [])|length > 1 %}
+            <form action="{{ url_for('create_next_tie_round', round_id=round.id) }}" method="post">
+              <button class="rounded-xl border border-line px-4 py-2 font-semibold hover:bg-zinc-50">基于本轮最高票开启下一轮</button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-2 text-sm">
+          {% for result in tie_results(round.id) %}
+          <span class="rounded-full {% if round_top_map.get(round.id, []) and result.id == round_top_map[round.id][0].id and round_top_map[round.id]|length == 1 %}bg-emerald-50 text-emerald-700{% elif result.id in round_top_ids_map.get(round.id, []) %}bg-amber-50 text-amber-700{% else %}bg-zinc-100 text-zinc-700{% endif %} px-3 py-1">
+            {{ result.name }}：{{ result.votes }}
+          </span>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <div class="rounded-2xl bg-zinc-50 px-4 py-6 text-sm text-muted">还没有任何加赛轮次。</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<script>
+  const captainNameInput = document.getElementById('captain_name_input');
+  const captainOpenIdInput = document.getElementById('captain_open_id_input');
+  document.querySelectorAll('.captain-bind').forEach((button) => {
+    button.addEventListener('click', () => {
+      captainNameInput.value = button.dataset.name || '';
+      captainOpenIdInput.value = button.dataset.openId || '';
+      captainNameInput.focus();
+    });
+  });
+</script>
+{% endblock %}

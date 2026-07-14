@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}实时榜单{% endblock %}
+{% block content %}
+<section class="overflow-hidden rounded-2xl bg-ink text-white shadow-xl">
+  <div class="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.2fr_0.8fr]">
+    <div>
+      <p class="text-sm font-medium uppercase tracking-[0.3em] text-zinc-400">FastForward Live</p>
+      <h1 class="mt-3 text-4xl font-black tracking-tight sm:text-6xl">实时榜单</h1>
+      <p class="mt-4 max-w-2xl text-zinc-300">公开展示刚需票、互评票、评委票与总票；并列第一时明确提示进入现场加赛。</p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        {% if active_round %}
+          <a href="{{ url_for('tie_vote') }}" class="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-950/30">第 {{ active_round.round_no }} 轮加赛进行中</a>
+        {% elif needs_tie_break %}
+          <span class="rounded-full bg-amber-400 px-5 py-2.5 text-sm font-semibold text-amber-950">第一名并列，待开启加赛</span>
+        {% endif %}
+        {% if champion_id %}<span class="rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white">冠军已确认</span>{% endif %}
+        <span class="rounded-full bg-white/10 px-5 py-2.5 text-sm font-semibold text-zinc-200">自动刷新中</span>
+      </div>
+    </div>
+    <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+      {% if needs_tie_break %}
+        <p class="text-sm text-zinc-400">当前并列第一</p>
+        <div class="mt-3 space-y-3">
+          {% for team in top_tied_teams %}
+            <div class="rounded-xl bg-white/10 px-4 py-3 text-xl font-bold">{{ team.name }}</div>
+          {% endfor %}
+        </div>
+      {% elif rows %}
+        <p class="text-sm text-zinc-400">当前第一</p>
+        <div class="mt-3 text-3xl font-bold">{{ rows[0].team.name }}</div>
+        <div class="mt-5 grid grid-cols-3 gap-3 text-center">
+          <div class="rounded-xl bg-white/10 p-3"><div class="text-2xl font-bold">{{ rows[0].total }}</div><div class="text-xs text-zinc-400">总票</div></div>
+          <div class="rounded-xl bg-white/10 p-3"><div class="text-2xl font-bold">{{ rows[0].peer_votes }}</div><div class="text-xs text-zinc-400">互评</div></div>
+          <div class="rounded-xl bg-white/10 p-3"><div class="text-2xl font-bold">{{ rows[0].judge_score }}</div><div class="text-xs text-zinc-400">评委票</div></div>
+        </div>
+      {% else %}
+        <p class="text-sm text-zinc-400">当前第一</p>
+        <div class="mt-3 text-zinc-400">暂无队伍</div>
+      {% endif %}
+      <div class="mt-5 text-xs text-zinc-400">最后刷新：{{ refreshed_at }}</div>
+    </div>
+  </div>
+</section>
+
+{% if champion_id %}
+  <div class="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900 shadow-sm">
+    冠军已确认：
+    {% for row in rows %}{% if row.team.id|string == champion_id %}<b>{{ row.team.name }}</b>{% endif %}{% endfor %}
+    {% if champion_confirmed_at %}<span class="text-sm text-emerald-700">（{{ champion_confirmed_at }}）</span>{% endif %}
+  </div>
+{% elif needs_tie_break %}
+  <div class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900 shadow-sm">
+    当前普通总分第一名并列：
+    {% for team in top_tied_teams %}<b>{{ team.name }}</b>{% if not loop.last %}、{% endif %}{% endfor %}。
+    请在管理员后台开启平票加赛。
+  </div>
+{% endif %}
+
+<section class="mt-6 overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
+  <div class="flex flex-col gap-2 border-b border-line px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+    <h2 class="text-lg font-bold">全部队伍排名</h2>
+    <div class="text-sm text-muted">每 15 秒自动刷新一次</div>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[760px] text-left text-sm">
+      <thead class="bg-zinc-50 text-xs uppercase tracking-wider text-muted"><tr><th class="px-5 py-4">排名</th><th>队伍</th><th>总票</th><th>刚需</th><th>互评</th><th>评委认可</th><th>评委票</th></tr></thead>
+      <tbody class="divide-y divide-line">
+        {% for row in rows %}
+        <tr class="{% if loop.index == 1 %}bg-yellow-50/80{% else %}bg-white{% endif %}">
+          <td class="px-5 py-5"><span class="grid h-9 w-9 place-items-center rounded-full {% if loop.index == 1 %}bg-yellow-400 text-yellow-950{% else %}bg-zinc-100 text-zinc-600{% endif %} font-bold">{{ loop.index }}</span></td>
+          <td>
+            <div class="font-semibold text-zinc-950">{{ row.team.name }}</div>
+            <div class="text-xs text-muted">报名顺序 #{{ row.team.order_index }}</div>
+            {% if needs_tie_break and row.team.id in top_tied_ids %}
+              <div class="mt-1 text-xs font-semibold text-amber-700">并列第一</div>
+            {% endif %}
+          </td>
+          <td class="text-3xl font-black text-zinc-950">{{ row.total }}</td>
+          <td><span class="rounded-full bg-blue-50 px-3 py-1 font-medium text-blue-700">{{ row.demand_vote }}</span></td>
+          <td><span class="rounded-full bg-purple-50 px-3 py-1 font-medium text-purple-700">{{ row.peer_votes }}</span></td>
+          <td>{{ row.judge_approvals }}</td>
+          <td><span class="rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-700">{{ row.judge_score }}</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="px-5 py-12 text-center text-muted">暂无队伍，请先在管理员后台录入。</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+  window.setTimeout(() => {
+    window.location.reload();
+  }, 15000);
+</script>
+{% endblock %}

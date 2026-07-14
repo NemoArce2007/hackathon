@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}倒计时{% endblock %}
+{% block content %}
+<div class="relative min-h-[calc(100vh-112px)] overflow-hidden rounded-[2rem] bg-[#f8fafc] shadow-xl ring-1 ring-line">
+  <div class="absolute inset-0 opacity-80" style="background: radial-gradient(circle at 15% 20%, rgba(37,99,235,.16), transparent 28%), radial-gradient(circle at 88% 12%, rgba(220,38,38,.12), transparent 26%), radial-gradient(circle at 65% 85%, rgba(16,185,129,.14), transparent 30%);"></div>
+  <div class="absolute left-6 top-6 h-20 w-20 rounded-full border border-blue-200"></div>
+  <div class="absolute bottom-8 right-8 h-28 w-28 rounded-full border border-red-200"></div>
+
+  <div class="relative z-10 grid min-h-[calc(100vh-112px)] grid-rows-[auto_1fr_auto] gap-4 p-4 sm:p-6">
+    <header class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-[0.3em] text-blue-700 sm:text-sm">FastForward Timer</p>
+        <h1 class="mt-1 text-2xl font-black tracking-tight text-zinc-950 sm:text-4xl" style="text-wrap: balance;">路演倒计时</h1>
+      </div>
+      <div class="flex flex-wrap gap-2 rounded-2xl border border-white/80 bg-white/80 p-1.5 shadow-sm backdrop-blur sm:p-2">
+        <button data-preset="240" class="preset rounded-xl bg-zinc-900 px-3 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.96] sm:px-4">4 分钟</button>
+        <button data-preset="120" class="preset rounded-xl px-3 py-2 text-sm font-semibold text-zinc-700 transition-transform active:scale-[0.96] hover:bg-zinc-100 sm:px-4">2 分钟</button>
+      </div>
+    </header>
+
+    <section class="mx-auto flex w-full max-w-4xl flex-col justify-center py-2 text-center sm:py-4">
+      <div class="mx-auto mb-5 grid h-56 w-56 place-items-center rounded-full bg-white shadow-2xl ring-8 ring-white/60 sm:h-72 sm:w-72" id="timerRing">
+        <div>
+          <div id="timeText" class="tabular-nums text-6xl font-black tracking-tight text-zinc-950 sm:text-7xl">04:00</div>
+          <div id="phaseText" class="mt-3 text-xs font-bold uppercase tracking-[0.28em] text-muted sm:text-sm">Ready</div>
+        </div>
+      </div>
+      <div class="mx-auto h-2.5 max-w-2xl overflow-hidden rounded-full bg-white shadow-inner ring-1 ring-line">
+        <div id="progressBar" class="h-full w-full rounded-full bg-blue-600 transition-[width,background-color] duration-300"></div>
+      </div>
+      <div class="mt-5 flex flex-wrap justify-center gap-3">
+        <button id="startPause" class="rounded-2xl bg-blue-600 px-7 py-3 text-base font-bold text-white shadow-lg shadow-blue-200 transition-transform active:scale-[0.96] hover:bg-blue-700 sm:px-8">开始</button>
+        <button id="reset" class="rounded-2xl border border-line bg-white px-7 py-3 text-base font-bold text-zinc-800 shadow-sm transition-transform active:scale-[0.96] hover:bg-zinc-50 sm:px-8">重置</button>
+      </div>
+    </section>
+
+    <footer class="grid gap-2.5 sm:grid-cols-3">
+      <div class="rounded-2xl border border-white/80 bg-white/80 p-4 shadow-sm backdrop-blur"><div class="text-sm text-muted">当前时长</div><div id="durationText" class="mt-1 text-xl font-black sm:text-2xl">4 分钟</div></div>
+      <div class="rounded-2xl border border-white/80 bg-white/80 p-4 shadow-sm backdrop-blur"><div class="text-sm text-muted">状态</div><div id="statusText" class="mt-1 text-xl font-black sm:text-2xl">待开始</div></div>
+      <div class="rounded-2xl border border-white/80 bg-white/80 p-4 shadow-sm backdrop-blur"><div class="text-sm text-muted">提示</div><div class="mt-1 text-xl font-black sm:text-2xl">到点响铃</div></div>
+    </footer>
+  </div>
+</div>
+
+<script>
+  let total = 240;
+  let remaining = 240;
+  let running = false;
+  let tick = null;
+  const timeText = document.getElementById('timeText');
+  const phaseText = document.getElementById('phaseText');
+  const progressBar = document.getElementById('progressBar');
+  const startPause = document.getElementById('startPause');
+  const statusText = document.getElementById('statusText');
+  const durationText = document.getElementById('durationText');
+  const timerRing = document.getElementById('timerRing');
+
+  function format(seconds) {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  function beep() {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const gain = ctx.createGain();
+    gain.connect(ctx.destination);
+    [0, 240, 480].forEach((delay) => {
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      osc.connect(gain);
+      osc.start(ctx.currentTime + delay / 1000);
+      osc.stop(ctx.currentTime + delay / 1000 + 0.16);
+    });
+  }
+
+  function render() {
+    timeText.textContent = format(remaining);
+    const pct = total === 0 ? 0 : Math.max(0, remaining / total * 100);
+    progressBar.style.width = `${pct}%`;
+    if (remaining <= 10 && remaining > 0) {
+      progressBar.className = 'h-full rounded-full bg-red-600 transition-[width,background-color] duration-300';
+      timerRing.className = 'mx-auto mb-5 grid h-56 w-56 place-items-center rounded-full bg-white shadow-2xl ring-8 ring-red-200 sm:h-72 sm:w-72';
+      phaseText.textContent = 'Final Seconds';
+      phaseText.className = 'mt-3 text-xs font-bold uppercase tracking-[0.28em] text-red-600 sm:text-sm';
+    } else if (remaining === 0) {
+      progressBar.className = 'h-full rounded-full bg-red-600 transition-[width,background-color] duration-300';
+      timerRing.className = 'mx-auto mb-5 grid h-56 w-56 place-items-center rounded-full bg-red-50 shadow-2xl ring-8 ring-red-200 sm:h-72 sm:w-72';
+      phaseText.textContent = 'Time Up';
+      phaseText.className = 'mt-3 text-xs font-bold uppercase tracking-[0.28em] text-red-600 sm:text-sm';
+    } else {
+      progressBar.className = 'h-full rounded-full bg-blue-600 transition-[width,background-color] duration-300';
+      timerRing.className = 'mx-auto mb-5 grid h-56 w-56 place-items-center rounded-full bg-white shadow-2xl ring-8 ring-white/60 sm:h-72 sm:w-72';
+      phaseText.textContent = running ? 'Running' : 'Ready';
+      phaseText.className = 'mt-3 text-xs font-bold uppercase tracking-[0.28em] text-muted sm:text-sm';
+    }
+    startPause.textContent = running ? '暂停' : '开始';
+    statusText.textContent = remaining === 0 ? '已结束' : running ? '计时中' : '待开始';
+    durationText.textContent = `${Math.round(total / 60)} 分钟`;
+  }
+
+  function stop() {
+    running = false;
+    clearInterval(tick);
+    tick = null;
+    render();
+  }
+
+  startPause.addEventListener('click', () => {
+    if (remaining === 0) remaining = total;
+    running = !running;
+    if (running) {
+      tick = setInterval(() => {
+        remaining = Math.max(0, remaining - 1);
+        if (remaining === 0) {
+          stop();
+          beep();
+        }
+        render();
+      }, 1000);
+    } else {
+      clearInterval(tick);
+      tick = null;
+    }
+    render();
+  });
+
+  document.getElementById('reset').addEventListener('click', () => {
+    stop();
+    remaining = total;
+    render();
+  });
+
+  document.querySelectorAll('.preset').forEach((button) => {
+    button.addEventListener('click', () => {
+      stop();
+      total = Number(button.dataset.preset);
+      remaining = total;
+      document.querySelectorAll('.preset').forEach((item) => item.className = 'preset rounded-xl px-3 py-2 text-sm font-semibold text-zinc-700 transition-transform active:scale-[0.96] hover:bg-zinc-100 sm:px-4');
+      button.className = 'preset rounded-xl bg-zinc-900 px-3 py-2 text-sm font-semibold text-white transition-transform active:scale-[0.96] sm:px-4';
+      render();
+    });
+  });
+
+  render();
+</script>
+{% endblock %}
