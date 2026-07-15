@@ -688,10 +688,10 @@ def peer():
                 (team["id"], target["id"], vote),
             )
         get_db().commit()
-        flash("互评结果已保存。")
-        return redirect(url_for("peer"))
+        return redirect(url_for("peer", saved=1))
     votes = {row["target_team_id"]: row["vote"] for row in get_db().execute("SELECT target_team_id, vote FROM peer_votes WHERE voter_team_id = ?", (team["id"],)).fetchall()}
-    return render_template("peer.html", team=team, targets=targets, votes=votes, status=status)
+    saved = request.args.get("saved") == "1"
+    return render_template("peer.html", team=team, targets=targets, votes=votes, status=status, saved=saved)
 
 
 @app.route("/tie-vote", methods=["GET", "POST"])

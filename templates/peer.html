@@ -39,4 +39,25 @@
     {% endif %}
   </div>
 {% endif %}
+
+{% if saved %}
+<div id="saveModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+  <div class="w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-2xl">
+    <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-100">
+      <svg class="h-9 w-9 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+    </div>
+    <h2 class="mt-5 text-2xl font-black">投票成功</h2>
+    <p class="mt-2 text-muted">你的互评结果已保存，开放期间可随时修改。</p>
+    <button type="button" onclick="closeSaveModal()" class="mt-6 w-full rounded-xl bg-ink px-6 py-3 font-semibold text-white shadow-sm hover:bg-zinc-700">知道了</button>
+  </div>
+</div>
+<script>
+  function closeSaveModal() {
+    document.getElementById('saveModal').remove();
+    if (window.history.replaceState) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }
+</script>
+{% endif %}
 {% endblock %}
