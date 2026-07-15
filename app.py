@@ -713,9 +713,9 @@ def tie_vote():
             (active["id"], team_id, g.user["feishu_open_id"], g.user["name"], g.user["tenant_key"]),
         )
         get_db().commit()
-        flash("平票加赛投票已提交。")
-        return redirect(url_for("tie_vote"))
-    return render_template("tie_vote.html", active_round=active, candidates=candidates, already=already)
+        return redirect(url_for("tie_vote", saved=1))
+    saved = request.args.get("saved") == "1"
+    return render_template("tie_vote.html", active_round=active, candidates=candidates, already=already, saved=saved)
 
 
 @app.route("/admin")
