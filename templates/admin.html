@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}管理员后台{% endblock %}
 {% block content %}
+{% set peer_labels = {'not_started': '未开始', 'open': '进行中', 'locked': '已锁定'} %}
 <div class="mb-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-line sm:p-8">
   <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
     <div>
@@ -11,7 +12,7 @@
     <div class="grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
       <div class="rounded-2xl bg-zinc-100 px-5 py-4"><div class="text-2xl font-black">{{ teams|length }}</div><div class="text-xs text-muted">队伍</div></div>
       <div class="rounded-2xl bg-zinc-100 px-5 py-4"><div class="text-2xl font-black">{{ judges|length }}</div><div class="text-xs text-muted">评委</div></div>
-      <div class="rounded-2xl bg-zinc-100 px-5 py-4"><div class="text-2xl font-black">{{ peer_status }}</div><div class="text-xs text-muted">互评</div></div>
+      <div class="rounded-2xl bg-zinc-100 px-5 py-4"><div class="text-2xl font-black">{{ peer_labels.get(peer_status, peer_status) }}</div><div class="text-xs text-muted">互评</div></div>
       <div class="rounded-2xl bg-zinc-100 px-5 py-4"><div class="text-2xl font-black">{% if champion_id %}已确认{% else %}未确认{% endif %}</div><div class="text-xs text-muted">冠军</div></div>
     </div>
   </div>
@@ -138,20 +139,20 @@
       <p class="mt-1 text-sm text-muted">M 必须满足 1 &lt;= M &lt; N / 2，可预览互评关系并查看提交明细。</p>
     </div>
     <div class="space-y-5 p-5">
-      <form action="{{ url_for('update_peer_settings') }}" method="post" class="flex gap-3">
+      <form action="{{ url_for('update_peer_settings') }}" method="post" class="flex flex-wrap items-center gap-3">
         <input type="hidden" name="action" value="set_m">
         <input name="peer_m" type="number" min="1" value="{{ peer_m }}" class="w-28 rounded-xl border border-line px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-blue-100">
-        <button class="rounded-xl border border-line px-5 py-3 font-semibold hover:bg-zinc-50">设置 M</button>
+        <button class="shrink-0 rounded-xl border border-line px-5 py-3 font-semibold hover:bg-zinc-50">设置 M</button>
       </form>
       <div class="rounded-2xl bg-zinc-50 p-4">
         <div class="text-sm text-muted">当前状态</div>
-        <div class="mt-1 text-2xl font-black">{{ peer_status }}</div>
+        <div class="mt-1 text-2xl font-black">{{ peer_labels.get(peer_status, peer_status) }}</div>
       </div>
-      <div class="grid gap-3 sm:grid-cols-3">
+      <div class="grid gap-3 grid-cols-1 sm:grid-cols-3">
         {% for state, label in [('not_started', '重置'), ('open', '开启互评'), ('locked', '锁定互评')] %}
         <form action="{{ url_for('update_peer_settings') }}" method="post">
           <input type="hidden" name="action" value="{{ state }}">
-          <button class="w-full rounded-xl {% if state == 'open' %}bg-emerald-600 hover:bg-emerald-700{% elif state == 'locked' %}bg-amber-600 hover:bg-amber-700{% else %}bg-zinc-900 hover:bg-zinc-700{% endif %} px-4 py-3 font-semibold text-white">{{ label }}</button>
+          <button class="w-full whitespace-nowrap rounded-xl {% if state == 'open' %}bg-emerald-600 hover:bg-emerald-700{% elif state == 'locked' %}bg-amber-600 hover:bg-amber-700{% else %}bg-zinc-900 hover:bg-zinc-700{% endif %} px-3 py-3 text-sm font-semibold text-white">{{ label }}</button>
         </form>
         {% endfor %}
       </div>
