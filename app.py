@@ -671,8 +671,9 @@ def countdown():
 def peer():
     team = get_captain_team(g.user["feishu_open_id"])
     status = get_setting("peer_status", "not_started")
+    peer_m = int(get_setting("peer_m", "1") or 1)
     if not team:
-        return render_template("peer.html", team=None, targets=[], votes={}, status=status)
+        return render_template("peer.html", team=None, targets=[], votes={}, status=status, peer_m=peer_m)
     targets = peer_targets(team["id"])
     if request.method == "POST":
         if status != "open":
@@ -691,7 +692,7 @@ def peer():
         return redirect(url_for("peer", saved=1))
     votes = {row["target_team_id"]: row["vote"] for row in get_db().execute("SELECT target_team_id, vote FROM peer_votes WHERE voter_team_id = ?", (team["id"],)).fetchall()}
     saved = request.args.get("saved") == "1"
-    return render_template("peer.html", team=team, targets=targets, votes=votes, status=status, saved=saved)
+    return render_template("peer.html", team=team, targets=targets, votes=votes, status=status, saved=saved, peer_m=peer_m)
 
 
 @app.route("/tie-vote", methods=["GET", "POST"])
