@@ -33,7 +33,7 @@
   <div class="px-5 pb-5 text-sm text-muted">当前页面：<a class="font-semibold text-brand hover:underline" href="{{ url_for('countdown') }}">/countdown</a></div>
 </section>
 
-<div class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+<div class="grid gap-6">
   <section class="rounded-2xl border border-line bg-white shadow-sm">
     <div class="border-b border-line p-5">
       <h2 class="text-xl font-bold">队伍管理</h2>
@@ -161,7 +161,7 @@
 
       <div>
         <div class="mb-3 font-semibold text-zinc-900">互评关系预览</div>
-        <div class="grid gap-3 text-sm">
+        <div class="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {% for row in peer_assignment_rows %}
           <div class="rounded-2xl border border-line p-4">
             <div class="flex items-center justify-between gap-4">
