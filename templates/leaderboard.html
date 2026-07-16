@@ -106,7 +106,7 @@
   </div>
   <div class="overflow-x-auto">
     <table class="w-full min-w-[760px] text-left text-sm">
-      <thead class="bg-zinc-50 text-xs uppercase tracking-wider text-muted"><tr><th class="px-5 py-4">排名</th><th>队伍</th><th>总票</th><th>刚需</th><th>互评</th><th>评委认可</th><th>评委票</th></tr></thead>
+      <thead class="bg-zinc-50 text-xs uppercase tracking-wider text-muted"><tr><th class="px-5 py-4">排名</th><th>队伍</th><th>总票</th>{% if tie_round %}<th>平票</th>{% endif %}<th>刚需</th><th>互评</th><th>评委认可</th><th>评委票</th></tr></thead>
       <tbody class="divide-y divide-line">
         {% for row in rows %}
         <tr class="{% if loop.index == 1 %}bg-yellow-50/80{% else %}bg-white{% endif %}">
@@ -119,13 +119,22 @@
             {% endif %}
           </td>
           <td class="text-3xl font-black text-zinc-950">{{ row.total }}</td>
+          {% if tie_round %}
+          <td>
+            {% if tie_votes.get(row.team.id) is not none %}
+              <span class="rounded-full bg-red-50 px-3 py-1 font-semibold text-red-700">{{ tie_votes.get(row.team.id) }}</span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          {% endif %}
           <td><span class="rounded-full bg-blue-50 px-3 py-1 font-medium text-blue-700">{{ row.demand_vote }}</span></td>
           <td><span class="rounded-full bg-purple-50 px-3 py-1 font-medium text-purple-700">{{ row.peer_votes }}</span></td>
           <td>{{ row.judge_approvals }}</td>
           <td><span class="rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-700">{{ row.judge_score }}</span></td>
         </tr>
         {% else %}
-        <tr><td colspan="7" class="px-5 py-12 text-center text-muted">暂无队伍，请先在管理员后台录入。</td></tr>
+        <tr><td colspan="{{ 8 if tie_round else 7 }}" class="px-5 py-12 text-center text-muted">暂无队伍，请先在管理员后台录入。</td></tr>
         {% endfor %}
       </tbody>
     </table>

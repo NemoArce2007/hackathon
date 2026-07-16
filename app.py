@@ -672,10 +672,15 @@ def logout():
 @app.route("/leaderboard")
 def leaderboard():
     state = leaderboard_state()
+    active = active_round()
+    tie_round = active or latest_closed_round()
+    tie_votes = {row["id"]: row["votes"] for row in tie_results(tie_round["id"])} if tie_round else {}
     return render_template(
         "leaderboard.html",
         rows=state["rows"],
-        active_round=active_round(),
+        active_round=active,
+        tie_round=tie_round,
+        tie_votes=tie_votes,
         champion_id=state["champion_id"],
         champion_confirmed_at=state["champion_confirmed_at"],
         top_tied_teams=state["top_tied_teams"],
