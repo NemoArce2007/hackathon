@@ -278,20 +278,20 @@
     </div>
 
     <form action="{{ url_for('save_judge_votes') }}" method="post" class="overflow-auto rounded-xl border border-line">
-      <table class="w-full min-w-[720px] text-left text-sm">
+      <table class="w-full min-w-[520px] text-left text-sm">
         <thead class="bg-zinc-50 text-xs uppercase tracking-wider text-muted">
-          <tr><th class="px-4 py-3">评委</th>{% for team in teams %}<th>{{ team.name }}</th>{% endfor %}</tr>
+          <tr><th class="px-4 py-3">队伍</th>{% for judge in judges %}<th class="px-4 py-3 text-center">{{ judge.order_index }}. {{ judge.name }}</th>{% endfor %}</tr>
         </thead>
         <tbody class="divide-y divide-line">
-          {% for judge in judges %}
+          {% for team in teams %}
           <tr>
-            <td class="px-4 py-4 font-semibold">{{ judge.order_index }}. {{ judge.name }}</td>
-            {% for team in teams %}
-            <td><input class="h-5 w-5 rounded" type="checkbox" name="judge_{{ judge.id }}_team_{{ team.id }}" value="1" {% if judge_votes.get((judge.id, team.id)) == 1 %}checked{% endif %}></td>
+            <td class="px-4 py-4 font-semibold">#{{ team.order_index }} {{ team.name }}</td>
+            {% for judge in judges %}
+            <td class="text-center"><input class="h-5 w-5 rounded" type="checkbox" name="judge_{{ judge.id }}_team_{{ team.id }}" value="1" {% if judge_votes.get((judge.id, team.id)) == 1 %}checked{% endif %}></td>
             {% endfor %}
           </tr>
           {% else %}
-          <tr><td class="px-4 py-8 text-muted" colspan="99">暂无评委</td></tr>
+          <tr><td class="px-4 py-8 text-muted" colspan="99">暂无队伍</td></tr>
           {% endfor %}
         </tbody>
       </table>
