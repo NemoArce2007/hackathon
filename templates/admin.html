@@ -189,6 +189,58 @@
 
 <section class="mt-6 rounded-2xl border border-line bg-white shadow-sm">
   <div class="border-b border-line p-5">
+    <h2 class="text-xl font-bold">平票加赛黑名单</h2>
+    <p class="mt-1 text-sm text-muted">黑名单内的飞书成员在平票加赛中全局禁投。请在上方“队伍管理”的搜索框检索飞书通讯录，再回到这里点“加入黑名单”。</p>
+  </div>
+  <div class="space-y-5 p-5">
+    {% if captain_query %}
+    <div class="rounded-2xl border border-dashed border-line p-4">
+      <div class="mb-3 text-sm text-muted">按“{{ captain_query }}”检索到的成员，点右侧按钮加入黑名单：</div>
+      <div class="grid gap-3">
+        {% for user in captain_candidates %}
+        <div class="flex items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3">
+          <span>
+            <span class="block font-semibold text-zinc-900">{{ user.name }}</span>
+            <span class="block font-mono text-xs text-muted">{{ user.feishu_open_id }}</span>
+          </span>
+          <form action="{{ url_for('add_blacklist') }}" method="post">
+            <input type="hidden" name="open_id" value="{{ user.feishu_open_id }}">
+            <input type="hidden" name="name" value="{{ user.name }}">
+            <button class="whitespace-nowrap rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700">加入黑名单</button>
+          </form>
+        </div>
+        {% else %}
+        <div class="rounded-2xl bg-zinc-50 px-4 py-6 text-sm text-muted">通讯录里没有找到匹配成员。</div>
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <div class="rounded-2xl bg-zinc-50 px-4 py-6 text-sm text-muted">在上方“队伍管理”的搜索框输入姓名或邮箱检索飞书通讯录后，这里会显示可加入黑名单的成员。</div>
+    {% endif %}
+
+    <div>
+      <div class="mb-3 font-semibold text-zinc-900">当前黑名单（{{ tie_blacklist|length }}）</div>
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {% for entry in tie_blacklist %}
+        <div class="flex items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3">
+          <span>
+            <span class="block font-semibold text-zinc-900">{{ entry.name }}</span>
+            <span class="block font-mono text-xs text-muted">{{ entry.open_id }}</span>
+          </span>
+          <form action="{{ url_for('delete_blacklist', entry_id=entry.id) }}" method="post" onsubmit="return confirm('确认将 {{ entry.name }} 移出黑名单吗？');">
+            <button class="whitespace-nowrap rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700">移除</button>
+          </form>
+        </div>
+        {% else %}
+        <div class="rounded-2xl bg-zinc-50 px-4 py-6 text-sm text-muted sm:col-span-2 lg:col-span-3">暂无黑名单成员。</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mt-6 rounded-2xl border border-line bg-white shadow-sm">
+  <div class="border-b border-line p-5">
     <h2 class="text-xl font-bold">评委管理与评委票</h2>
     <p class="mt-1 text-sm text-muted">支持新增、编辑、删除评委，并按评委逐队录入是否能上岗。</p>
   </div>

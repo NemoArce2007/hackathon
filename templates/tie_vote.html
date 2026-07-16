@@ -12,6 +12,11 @@
   </div>
   {% if not active_round %}
     <div class="mt-6 rounded-2xl border border-line bg-white p-8 text-muted shadow-sm">当前没有进行中的平票加赛。</div>
+  {% elif blocked %}
+    <div class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-8 text-amber-900 shadow-sm">
+      <div class="text-xl font-bold">你不在本次投票范围内</div>
+      <p class="mt-2">你已被管理员加入平票加赛黑名单，无法参与投票。如有疑问请联系管理员。</p>
+    </div>
   {% elif already %}
     <div class="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-8 text-emerald-900 shadow-sm">
       <div class="text-xl font-bold">已提交</div>

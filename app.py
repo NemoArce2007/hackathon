@@ -155,6 +155,12 @@ def init_db():
         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
         UNIQUE (round_id, voter_open_id)
     );
+    CREATE TABLE IF NOT EXISTS tie_break_blacklist (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        open_id TEXT NOT NULL UNIQUE,
+        name TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
     """)
     ensure_columns(
         "users",
@@ -509,6 +515,15 @@ def top_tied_teams():
     return [row["team"] for row in rows if row["total"] == top_score]
 
 
+def tie_blacklist():
+    return get_db().execute("SELECT * FROM tie_break_blacklist ORDER BY created_at DESC, id DESC").fetchall()
+
+
+def is_blacklisted(open_id):
+    row = get_db().execute("SELECT 1 FROM tie_break_blacklist WHERE open_id = ?", (open_id,)).fetchone()
+    return row is not None
+
+
 def active_round():
     return get_db().execute("SELECT * FROM tie_break_rounds WHERE status = 'open' ORDER BY round_no DESC LIMIT 1").fetchone()
 
@@ -699,15 +714,19 @@ def peer():
 @login_required
 def tie_vote():
     active = active_round()
+    blocked = is_blacklisted(g.user["feishu_open_id"])
     if not active:
-        return render_template("tie_vote.html", active_round=None, candidates=[], already=None)
+        return render_template("tie_vote.html", active_round=None, candidates=[], already=None, blocked=blocked)
     already = get_db().execute("SELECT * FROM tie_break_votes WHERE round_id = ? AND voter_open_id = ?", (active["id"], g.user["feishu_open_id"])).fetchone()
     candidates = round_candidates(active["id"])
+    candidate_ids = {team["id"] for team in candidates}
     if request.method == "POST":
+        if blocked:
+            abort(403)
         if already:
             abort(403)
         team_id = int(request.form["team_id"])
-        if team_id not in {team["id"] for team in candidates}:
+        if team_id not in candidate_ids:
             abort(400)
         get_db().execute(
             "INSERT INTO tie_break_votes (round_id, team_id, voter_open_id, voter_name, tenant_key) VALUES (?, ?, ?, ?, ?)",
@@ -716,7 +735,7 @@ def tie_vote():
         get_db().commit()
         return redirect(url_for("tie_vote", saved=1))
     saved = request.args.get("saved") == "1"
-    return render_template("tie_vote.html", active_round=active, candidates=candidates, already=already, saved=saved)
+    return render_template("tie_vote.html", active_round=active, candidates=candidates, already=already, saved=saved, blocked=blocked)
 
 
 @app.route("/admin")
@@ -764,6 +783,7 @@ def admin():
         edit_team=edit_team,
         edit_judge=edit_judge,
         latest_closed_round=latest_closed_round(),
+        tie_blacklist=tie_blacklist(),
     )
 
 
@@ -946,6 +966,32 @@ def confirm_champion():
     set_setting("champion_confirmed_at", datetime.now().isoformat(timespec="seconds"))
     flash("冠军已确认。")
     return redirect(url_for("leaderboard"))
+
+
+@app.route("/admin/blacklist", methods=["POST"])
+@admin_required
+def add_blacklist():
+    open_id = request.form.get("open_id", "").strip()
+    name = request.form.get("name", "").strip()
+    if not open_id or not name:
+        flash("请从飞书通讯录搜索结果中选择要加入黑名单的成员。")
+        return redirect(url_for("admin"))
+    try:
+        get_db().execute("INSERT INTO tie_break_blacklist (open_id, name) VALUES (?, ?)", (open_id, name))
+        get_db().commit()
+        flash(f"已将 {name} 加入平票加赛黑名单。")
+    except sqlite3.IntegrityError:
+        flash(f"{name} 已在黑名单中。")
+    return redirect(url_for("admin"))
+
+
+@app.route("/admin/blacklist/<int:entry_id>/delete", methods=["POST"])
+@admin_required
+def delete_blacklist(entry_id):
+    get_db().execute("DELETE FROM tie_break_blacklist WHERE id = ?", (entry_id,))
+    get_db().commit()
+    flash("已移出黑名单。")
+    return redirect(url_for("admin"))
 
 
 @app.context_processor
