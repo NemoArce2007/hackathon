@@ -1,4 +1,5 @@
 import os
+import re
 import secrets
 import sqlite3
 from datetime import datetime, timedelta
@@ -433,17 +434,34 @@ def search_feishu_users(user, query="", limit=12):
         raise RuntimeError(payload.get("msg") or "飞书通讯录搜索失败。")
     users = []
     for item in payload.get("data", {}).get("items", []):
-        open_id = item.get("open_id")
+        open_id = item.get("open_id") or item.get("id")
         if not open_id:
             continue
+        meta = item.get("meta_data") or {}
+        i18n = meta.get("i18n_names") or {}
+        display_info = item.get("display_info") or ""
+        display_text = re.sub(r"</?h>", "", display_info).strip()
+        display_lines = [line.strip() for line in display_text.split("\n") if line.strip()]
+        name = (
+            item.get("localized_name")
+            or item.get("name")
+            or i18n.get("zh_cn")
+            or (display_lines[0] if display_lines else "")
+            or item.get("en_name")
+            or "未命名用户"
+        )
+        department = item.get("department") or (display_lines[1] if len(display_lines) > 1 else "")
+        enterprise_email = item.get("enterprise_email") or meta.get("enterprise_mail_address") or ""
+        email = item.get("email") or meta.get("mail_address") or ""
+        is_cross_tenant = item.get("is_cross_tenant", meta.get("is_cross_tenant", False))
         users.append(
             {
                 "feishu_open_id": open_id,
-                "name": item.get("localized_name") or item.get("name") or item.get("en_name") or "未命名用户",
-                "department": item.get("department", ""),
-                "email": item.get("email", ""),
-                "enterprise_email": item.get("enterprise_email", ""),
-                "is_cross_tenant": item.get("is_cross_tenant", False),
+                "name": name,
+                "department": department,
+                "email": email,
+                "enterprise_email": enterprise_email,
+                "is_cross_tenant": is_cross_tenant,
             }
         )
     return users
