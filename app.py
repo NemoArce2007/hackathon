@@ -633,6 +633,15 @@ def leaderboard_state():
     }
 
 
+def post_login_target(open_id):
+    """登录后按当前活动环节决定落地页：加赛开启→平票投票（所有人）；互评开启→队长互评（仅队长）；否则榜单。"""
+    if active_round():
+        return url_for("tie_vote")
+    if get_setting("peer_status", "not_started") == "open" and get_captain_team(open_id):
+        return url_for("peer")
+    return url_for("leaderboard")
+
+
 @app.route("/")
 def index():
     return redirect(url_for("leaderboard"))
@@ -663,7 +672,7 @@ def feishu_callback():
         abort(400)
     profile, token_data = fetch_feishu_user(code)
     upsert_user(profile, token_data=token_data)
-    return redirect(url_for("leaderboard"))
+    return redirect(post_login_target(profile["open_id"]))
 
 
 @app.route("/auth/dev", methods=["POST"])
@@ -676,7 +685,7 @@ def dev_login():
     if request.form.get("admin") == "1":
         get_db().execute("INSERT OR IGNORE INTO admins (feishu_open_id, name) VALUES (?, ?)", (open_id, name))
         get_db().commit()
-    return redirect(url_for("leaderboard"))
+    return redirect(post_login_target(open_id))
 
 
 @app.route("/logout")
