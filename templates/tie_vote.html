@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 {% block title %}平票投票{% endblock %}
 {% block content %}
-<div class="mx-auto max-w-3xl">
-  <div class="relative overflow-hidden rounded-[2rem] bg-[#f8fafc] p-8 shadow-xl ring-1 ring-line">
+<div class="relative mb-6 overflow-hidden rounded-[2rem] bg-[#f8fafc] p-8 shadow-xl ring-1 ring-line">
     <div class="absolute inset-0 opacity-80" style="background: radial-gradient(circle at 15% 20%, rgba(220,38,38,.14), transparent 28%), radial-gradient(circle at 88% 15%, rgba(37,99,235,.14), transparent 26%);"></div>
     <div class="absolute right-6 top-6 h-20 w-20 rounded-full border border-red-200"></div>
     <div class="relative z-10">
@@ -30,7 +29,6 @@
       <button class="w-full rounded-xl bg-accent px-6 py-3 font-semibold text-white shadow-lg shadow-red-100 hover:bg-red-700">提交投票</button>
     </form>
   {% endif %}
-</div>
 
 {% if saved %}
 <div id="saveModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
