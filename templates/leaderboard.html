@@ -2,31 +2,35 @@
 {% block title %}实时榜单{% endblock %}
 {% block content %}
 {% if champion_id and rows %}
-<section class="relative mb-6 overflow-hidden rounded-4xl bg-gradient-to-b from-[#1a1a2e] via-[#16213e] to-[#0f1729] px-4 py-10 text-white shadow-apple sm:px-10 sm:py-14">
-  <div class="pointer-events-none absolute inset-0 opacity-70" style="background: radial-gradient(circle at 50% 0%, rgba(250,204,21,.28), transparent 45%), radial-gradient(circle at 12% 80%, rgba(59,130,246,.18), transparent 40%), radial-gradient(circle at 88% 78%, rgba(236,72,153,.16), transparent 40%);"></div>
-  <div class="relative">
+<section class="relative mb-6 overflow-hidden rounded-[2rem] bg-[#f8fafc] shadow-xl ring-1 ring-line">
+  <div class="absolute inset-0 opacity-80" style="background: radial-gradient(circle at 15% 20%, rgba(37,99,235,.16), transparent 28%), radial-gradient(circle at 88% 12%, rgba(234,179,8,.18), transparent 26%), radial-gradient(circle at 65% 85%, rgba(16,185,129,.14), transparent 30%);"></div>
+  <div class="absolute left-6 top-6 h-20 w-20 rounded-full border border-amber-200"></div>
+  <div class="absolute bottom-8 right-8 h-28 w-28 rounded-full border border-blue-200"></div>
+
+  <div class="relative z-10 p-6 sm:p-10">
     <div class="text-center">
-      <p class="text-sm font-semibold uppercase tracking-[0.4em] text-amber-300">Champions</p>
-      <h2 class="mt-2 text-4xl font-black tracking-tight sm:text-5xl">🏆 恭喜获奖队伍 🏆</h2>
-      <p class="mt-3 text-sm text-white/60">大合影时间到，站上领奖台合影打卡</p>
+      <p class="text-xs font-bold uppercase tracking-[0.3em] text-amber-600 sm:text-sm">Champions</p>
+      <h2 class="mt-1 text-2xl font-black tracking-tight text-zinc-950 sm:text-4xl" style="text-wrap: balance;">恭喜获奖队伍</h2>
+      <p class="mt-2 text-sm text-muted">大合影时间到，站上领奖台合影打卡</p>
     </div>
 
     {% set podium = rows[:3] %}
     {% set medals = ['🥇', '🥈', '🥉'] %}
     {% set order = [1, 0, 2] %}
-    {% set heights = ['h-44', 'h-28', 'h-20'] %}
-    {% set ring = ['ring-amber-300/80', 'ring-zinc-300/60', 'ring-orange-400/60'] %}
-    {% set glow = ['shadow-amber-400/50', 'shadow-zinc-400/30', 'shadow-orange-500/30'] %}
-    <div class="mx-auto mt-10 grid max-w-3xl grid-cols-3 items-end gap-3 sm:gap-6">
+    {% set heights = ['h-40', 'h-28', 'h-20'] %}
+    {% set card_ring = ['ring-amber-300', 'ring-zinc-200', 'ring-orange-200'] %}
+    {% set num_color = ['text-amber-500', 'text-zinc-400', 'text-orange-400'] %}
+    {% set name_color = ['text-amber-700', 'text-zinc-800', 'text-zinc-800'] %}
+    <div class="mx-auto mt-8 grid max-w-3xl grid-cols-3 items-end gap-3 sm:gap-6">
       {% for pos in order %}
         {% if podium|length > pos %}
           {% set row = podium[pos] %}
           <div class="flex flex-col items-center">
             <div class="text-4xl sm:text-5xl">{{ medals[pos] }}</div>
-            <div class="mt-2 max-w-full truncate px-1 text-center text-base font-black sm:text-xl {% if pos == 0 %}text-amber-200{% endif %}">{{ row.team.name }}</div>
-            <div class="text-xs text-white/60">总票 {{ row.total }}</div>
-            <div class="mt-3 flex w-full flex-col justify-end rounded-t-2xl bg-white/10 ring-1 {{ ring[pos] }} shadow-xl {{ glow[pos] }} {{ heights[pos] }}">
-              <div class="pb-2 text-center text-3xl font-black text-white/90 sm:text-4xl">{{ pos + 1 }}</div>
+            <div class="mt-2 max-w-full truncate px-1 text-center text-base font-black sm:text-xl {{ name_color[pos] }}">{{ row.team.name }}</div>
+            <div class="text-xs text-muted">总票 {{ row.total }}</div>
+            <div class="mt-3 flex w-full flex-col justify-end rounded-t-2xl border border-white/80 bg-white/80 shadow-sm ring-1 {{ card_ring[pos] }} backdrop-blur {{ heights[pos] }}">
+              <div class="pb-3 text-center text-4xl font-black sm:text-5xl {{ num_color[pos] }}">{{ pos + 1 }}</div>
             </div>
           </div>
         {% else %}
@@ -34,7 +38,7 @@
         {% endif %}
       {% endfor %}
     </div>
-    {% if champion_confirmed_at %}<p class="relative mt-6 text-center text-xs text-white/40">冠军确认时间：{{ champion_confirmed_at }}</p>{% endif %}
+    {% if champion_confirmed_at %}<p class="mt-6 text-center text-xs text-muted">冠军确认时间：{{ champion_confirmed_at }}</p>{% endif %}
   </div>
 </section>
 {% endif %}
