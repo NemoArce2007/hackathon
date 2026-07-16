@@ -14,9 +14,9 @@
     {% set podium = rows[:3] %}
     {% set medals = ['🥇', '🥈', '🥉'] %}
     {% set order = [1, 0, 2] %}
-    {% set heights = ['h-24', 'h-40', 'h-16'] %}
-    {% set ring = ['ring-zinc-300/60', 'ring-amber-300/80', 'ring-orange-400/60'] %}
-    {% set glow = ['shadow-zinc-400/30', 'shadow-amber-400/50', 'shadow-orange-500/30'] %}
+    {% set heights = ['h-44', 'h-28', 'h-20'] %}
+    {% set ring = ['ring-amber-300/80', 'ring-zinc-300/60', 'ring-orange-400/60'] %}
+    {% set glow = ['shadow-amber-400/50', 'shadow-zinc-400/30', 'shadow-orange-500/30'] %}
     <div class="mx-auto mt-10 grid max-w-3xl grid-cols-3 items-end gap-3 sm:gap-6">
       {% for pos in order %}
         {% if podium|length > pos %}
