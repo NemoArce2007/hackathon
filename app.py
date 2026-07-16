@@ -1,4 +1,6 @@
+import json
 import os
+import random
 import re
 import secrets
 import sqlite3
@@ -372,6 +374,20 @@ def ordered_teams():
     return get_db().execute("SELECT * FROM teams ORDER BY order_index, id").fetchall()
 
 
+def demo_order():
+    """返回路演顺序队伍列表（已排好序）。无有效顺序则返回空列表。"""
+    raw = get_setting("demo_order_ids", "")
+    if not raw:
+        return []
+    try:
+        ids = json.loads(raw)
+    except (ValueError, TypeError):
+        return []
+    teams_by_id = {team["id"]: team for team in ordered_teams()}
+    ordered = [teams_by_id[tid] for tid in ids if tid in teams_by_id]
+    return ordered
+
+
 def list_judges():
     return get_db().execute("SELECT * FROM judges ORDER BY order_index, id").fetchall()
 
@@ -681,6 +697,8 @@ def leaderboard():
         active_round=active,
         tie_round=tie_round,
         tie_votes=tie_votes,
+        demo_order=demo_order(),
+        demo_order_at=get_setting("demo_order_at", ""),
         champion_id=state["champion_id"],
         champion_confirmed_at=state["champion_confirmed_at"],
         top_tied_teams=state["top_tied_teams"],
@@ -807,6 +825,8 @@ def admin():
         edit_judge=edit_judge,
         latest_closed_round=latest_closed_round(),
         tie_blacklist=tie_blacklist(),
+        demo_order=demo_order(),
+        demo_order_at=get_setting("demo_order_at", ""),
     )
 
 
@@ -1014,6 +1034,30 @@ def delete_blacklist(entry_id):
     get_db().execute("DELETE FROM tie_break_blacklist WHERE id = ?", (entry_id,))
     get_db().commit()
     flash("已移出黑名单。")
+    return redirect(url_for("admin"))
+
+
+@app.route("/admin/demo-order", methods=["POST"])
+@admin_required
+def generate_demo_order():
+    teams = ordered_teams()
+    if not teams:
+        flash("暂无队伍，无法生成路演顺序。")
+        return redirect(url_for("admin"))
+    ids = [team["id"] for team in teams]
+    random.shuffle(ids)
+    set_setting("demo_order_ids", json.dumps(ids))
+    set_setting("demo_order_at", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    flash("已随机生成路演顺序。")
+    return redirect(url_for("admin"))
+
+
+@app.route("/admin/demo-order/clear", methods=["POST"])
+@admin_required
+def clear_demo_order():
+    set_setting("demo_order_ids", "")
+    set_setting("demo_order_at", "")
+    flash("已清空路演顺序。")
     return redirect(url_for("admin"))
 
 

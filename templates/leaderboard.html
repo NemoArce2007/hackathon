@@ -99,6 +99,30 @@
   </div>
 {% endif %}
 
+{% if demo_order %}
+<section class="relative mt-6 overflow-hidden rounded-[2rem] bg-[#f8fafc] shadow-xl ring-1 ring-line">
+  <div class="absolute inset-0 opacity-80" style="background: radial-gradient(circle at 12% 20%, rgba(37,99,235,.14), transparent 28%), radial-gradient(circle at 88% 18%, rgba(16,185,129,.12), transparent 26%);"></div>
+  <div class="relative z-10 p-6 sm:p-8">
+    <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-[0.3em] text-blue-700 sm:text-sm">Demo Order</p>
+        <h2 class="mt-1 text-2xl font-black tracking-tight text-zinc-950 sm:text-3xl">路演顺序</h2>
+        <p class="mt-2 text-sm text-muted">按此顺序上台路演，请队长留意自己的位次。</p>
+      </div>
+      {% if demo_order_at %}<span class="text-xs text-muted">生成时间：{{ demo_order_at }}</span>{% endif %}
+    </div>
+    <div class="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {% for team in demo_order %}
+      <div class="flex items-center gap-3 rounded-2xl border border-white/80 bg-white/80 px-4 py-3 shadow-sm backdrop-blur">
+        <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand text-base font-black text-white">{{ loop.index }}</span>
+        <span class="truncate text-base font-bold text-zinc-950">{{ team.name }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
 <section class="mt-6 overflow-hidden rounded-4xl border border-black/5 bg-white shadow-apple">
   <div class="flex flex-col gap-2 border-b border-line px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
     <h2 class="text-lg font-semibold">全部队伍排名</h2>
