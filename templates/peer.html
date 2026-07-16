@@ -1,10 +1,14 @@
 {% extends "base.html" %}
 {% block title %}队长互评{% endblock %}
 {% block content %}
-<div class="mb-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-line sm:p-8">
-  <p class="text-sm font-semibold uppercase tracking-[0.25em] text-brand">Captain Review</p>
-  <h1 class="mt-3 text-4xl font-black tracking-tight">队长互评</h1>
-  <p class="mt-3 max-w-2xl text-muted">只评价报名顺序后面的 {{ peer_m }} 支队伍，开放期间可反复修改，锁定后只读。</p>
+<div class="relative mb-6 overflow-hidden rounded-[2rem] bg-[#f8fafc] p-6 shadow-xl ring-1 ring-line sm:p-8">
+  <div class="absolute inset-0 opacity-80" style="background: radial-gradient(circle at 15% 20%, rgba(37,99,235,.16), transparent 28%), radial-gradient(circle at 88% 12%, rgba(16,185,129,.14), transparent 26%);"></div>
+  <div class="absolute right-6 top-6 h-20 w-20 rounded-full border border-blue-200"></div>
+  <div class="relative z-10">
+    <p class="text-xs font-bold uppercase tracking-[0.3em] text-blue-700 sm:text-sm">Captain Review</p>
+    <h1 class="mt-1 text-2xl font-black tracking-tight text-zinc-950 sm:text-4xl">队长互评</h1>
+    <p class="mt-2 max-w-2xl text-muted">只评价报名顺序后面的 {{ peer_m }} 支队伍，开放期间可反复修改，锁定后只读。</p>
+  </div>
 </div>
 {% if not g.user %}
   <div class="rounded-2xl border border-line bg-white p-8 text-muted shadow-sm">请先登录。</div>
