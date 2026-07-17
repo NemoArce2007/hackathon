@@ -2,35 +2,35 @@
 {% block title %}实时榜单{% endblock %}
 {% block content %}
 {% if champion_id and rows %}
-<section class="relative mb-6 overflow-hidden rounded-[2rem] bg-[#f8fafc] shadow-xl ring-1 ring-line">
-  <div class="absolute inset-0 opacity-80" style="background: radial-gradient(circle at 15% 20%, rgba(37,99,235,.16), transparent 28%), radial-gradient(circle at 88% 12%, rgba(234,179,8,.18), transparent 26%), radial-gradient(circle at 65% 85%, rgba(16,185,129,.14), transparent 30%);"></div>
-  <div class="absolute left-6 top-6 h-20 w-20 rounded-full border border-amber-200"></div>
-  <div class="absolute bottom-8 right-8 h-28 w-28 rounded-full border border-blue-200"></div>
-
-  <div class="relative z-10 p-6 sm:p-10">
+<section class="relative mb-6 overflow-hidden rounded-[2.5rem] bg-gradient-to-b from-amber-50 via-white to-white shadow-2xl ring-1 ring-amber-100">
+  <div class="absolute inset-0 opacity-90" style="background: radial-gradient(circle at 20% 0%, rgba(234,179,8,.22), transparent 40%), radial-gradient(circle at 80% 5%, rgba(37,99,235,.14), transparent 38%);"></div>
+  <div class="pointer-events-none absolute left-10 top-10 h-24 w-24 rounded-full border border-amber-200/70"></div>
+  <div class="pointer-events-none absolute right-12 top-16 h-16 w-16 rounded-full border border-blue-200/70"></div>
+  <div class="relative z-10 px-6 pb-12 pt-10 sm:px-12 sm:pt-12">
     <div class="text-center">
-      <p class="text-xs font-bold uppercase tracking-[0.3em] text-amber-600 sm:text-sm">Champions</p>
-      <h2 class="mt-1 text-2xl font-black tracking-tight text-zinc-950 sm:text-4xl" style="text-wrap: balance;">恭喜获奖队伍</h2>
-      <p class="mt-2 text-sm text-muted">大合影时间到，站上领奖台合影打卡</p>
+      <span class="inline-flex items-center gap-2 rounded-full bg-amber-100/80 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.3em] text-amber-700 ring-1 ring-amber-200 sm:text-sm">Champions</span>
+      <h2 class="mt-4 text-3xl font-black tracking-tight text-zinc-950 sm:text-5xl" style="text-wrap: balance;">恭喜获奖队伍</h2>
+      <p class="mt-3 text-sm text-zinc-500 sm:text-base">大合影时间到，站上领奖台合影打卡</p>
     </div>
-
     {% set podium = rows[:3] %}
-    {% set medals = ['🥇', '🥈', '🥉'] %}
     {% set order = [1, 0, 2] %}
-    {% set heights = ['h-40', 'h-28', 'h-20'] %}
-    {% set card_ring = ['ring-amber-300', 'ring-zinc-200', 'ring-orange-200'] %}
-    {% set num_color = ['text-amber-500', 'text-zinc-400', 'text-orange-400'] %}
-    {% set name_color = ['text-amber-700', 'text-zinc-800', 'text-zinc-800'] %}
-    <div class="mx-auto mt-8 grid max-w-3xl grid-cols-3 items-end gap-3 sm:gap-6">
+    {% set medals = ['🥇', '🥈', '🥉'] %}
+    {% set labels = ['冠军', '亚军', '季军'] %}
+    {% set heights = ['h-52 sm:h-64', 'h-40 sm:h-48', 'h-32 sm:h-40'] %}
+    {% set step_bg = ['from-amber-300 to-amber-400', 'from-zinc-200 to-zinc-300', 'from-orange-200 to-orange-300'] %}
+    {% set step_text = ['text-amber-50', 'text-white', 'text-orange-50'] %}
+    {% set name_color = ['text-amber-800', 'text-zinc-800', 'text-orange-800'] %}
+    <div class="mx-auto mt-10 grid max-w-4xl grid-cols-3 items-end gap-4 sm:gap-8">
       {% for pos in order %}
         {% if podium|length > pos %}
           {% set row = podium[pos] %}
           <div class="flex flex-col items-center">
-            <div class="text-4xl sm:text-5xl">{{ medals[pos] }}</div>
-            <div class="mt-2 max-w-full truncate px-1 text-center text-base font-black sm:text-xl {{ name_color[pos] }}">{{ row.team.name }}</div>
-            <div class="text-xs text-muted">总票 {{ row.total }}</div>
-            <div class="mt-3 flex w-full flex-col justify-end rounded-t-2xl border border-white/80 bg-white/80 shadow-sm ring-1 {{ card_ring[pos] }} backdrop-blur {{ heights[pos] }}">
-              <div class="pb-3 text-center text-4xl font-black sm:text-5xl {{ num_color[pos] }}">{{ pos + 1 }}</div>
+            <div class="mb-2 text-5xl drop-shadow-sm sm:text-6xl">{{ medals[pos] }}</div>
+            <div class="w-full max-w-full truncate px-1 text-center text-xl font-black sm:text-2xl {{ name_color[pos] }}">{{ row.team.name }}</div>
+            <div class="mt-1.5 rounded-full bg-white/70 px-3 py-1 text-xs font-bold text-zinc-500 shadow-sm ring-1 ring-black/5">总票 {{ row.total }}</div>
+            <div class="mt-3 flex w-full flex-col items-center rounded-t-2xl bg-gradient-to-b shadow-inner {{ step_bg[pos] }} {{ heights[pos] }}">
+              <div class="pt-4 text-xs font-bold uppercase tracking-widest opacity-90 {{ step_text[pos] }}">{{ labels[pos] }}</div>
+              <div class="text-6xl font-black leading-none sm:text-7xl {{ step_text[pos] }}" style="text-shadow: 0 2px 8px rgba(0,0,0,.12);">{{ pos + 1 }}</div>
             </div>
           </div>
         {% else %}
@@ -38,53 +38,55 @@
         {% endif %}
       {% endfor %}
     </div>
-    {% if champion_confirmed_at %}<p class="mt-6 text-center text-xs text-muted">冠军确认时间：{{ champion_confirmed_at }}</p>{% endif %}
+    {% if champion_confirmed_at %}<p class="mt-8 text-center text-xs text-zinc-400">冠军确认时间：{{ champion_confirmed_at }}</p>{% endif %}
   </div>
 </section>
 {% endif %}
-<section class="relative overflow-hidden rounded-[2rem] bg-[#f8fafc] shadow-xl ring-1 ring-line">
-  <div class="absolute inset-0 opacity-80" style="background: radial-gradient(circle at 12% 20%, rgba(37,99,235,.16), transparent 28%), radial-gradient(circle at 88% 15%, rgba(220,38,38,.1), transparent 26%), radial-gradient(circle at 60% 90%, rgba(16,185,129,.12), transparent 30%);"></div>
-  <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full border border-blue-200"></div>
-  <div class="relative z-10 grid gap-8 p-7 sm:p-10 lg:grid-cols-[1.2fr_0.8fr]">
-    <div>
+<section class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#f8fafc] via-white to-[#f4f7ff] shadow-xl ring-1 ring-line">
+  <div class="absolute inset-0 opacity-80" style="background: radial-gradient(circle at 12% 20%, rgba(37,99,235,.16), transparent 30%), radial-gradient(circle at 88% 15%, rgba(220,38,38,.1), transparent 26%), radial-gradient(circle at 60% 95%, rgba(16,185,129,.12), transparent 32%);"></div>
+  <div class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full border border-blue-200/60"></div>
+  <div class="relative z-10 grid gap-8 p-7 sm:p-10 lg:grid-cols-[1.15fr_0.85fr]">
+    <div class="flex flex-col justify-center">
       <p class="text-xs font-bold uppercase tracking-[0.3em] text-blue-700 sm:text-sm">FastForward Live</p>
-      <h1 class="mt-1 text-4xl font-black tracking-tight text-zinc-950 sm:text-6xl">实时榜单</h1>
-      <p class="mt-4 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">公开展示刚需票、互评票、评委票与总票；并列第一时明确提示进入现场加赛。</p>
+      <h1 class="mt-2 text-4xl font-black tracking-tight text-zinc-950 sm:text-6xl">实时榜单</h1>
+      <p class="mt-4 max-w-2xl text-base leading-relaxed text-zinc-500 sm:text-lg">公开展示刚需票、互评票、评委票与总票；并列第一时明确提示进入现场加赛。</p>
       <div class="mt-6 flex flex-wrap gap-3">
         {% if active_round %}
           <a href="{{ url_for('tie_vote') }}" class="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-200">第 {{ active_round.round_no }} 轮加赛进行中</a>
         {% elif needs_tie_break %}
           <span class="rounded-full bg-amber-400 px-5 py-2.5 text-sm font-semibold text-amber-950">第一名并列，待开启加赛</span>
         {% endif %}
-        {% if champion_id %}<span class="rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white">冠军已确认</span>{% endif %}
-        <span class="rounded-full border border-line bg-white px-5 py-2.5 text-sm font-semibold text-zinc-600 shadow-sm">自动刷新中</span>
+        {% if champion_id %}<span class="rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-200">冠军已确认</span>{% endif %}
+        <span class="inline-flex items-center gap-2 rounded-full border border-line bg-white px-5 py-2.5 text-sm font-semibold text-zinc-600 shadow-sm"><span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>自动刷新中</span>
       </div>
     </div>
-    <div class="rounded-2xl border border-white/80 bg-white/80 p-5 shadow-sm backdrop-blur">
+    <div class="rounded-3xl border border-white/80 bg-white/90 p-6 shadow-lg backdrop-blur">
       {% if needs_tie_break %}
-        <p class="text-sm text-muted">当前并列第一</p>
-        <div class="mt-3 space-y-3">
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-amber-600">当前并列第一</p>
+        <div class="mt-3 space-y-2">
           {% for team in top_tied_teams %}
-            <div class="rounded-xl bg-zinc-100 px-4 py-3 text-xl font-bold text-zinc-950">{{ team.name }}</div>
+            <div class="rounded-2xl bg-amber-50 px-4 py-3 text-lg font-black text-amber-900 ring-1 ring-amber-100">{{ team.name }}</div>
           {% endfor %}
         </div>
       {% elif rows %}
-        <p class="text-sm text-muted">当前第一</p>
-        <div class="mt-3 text-3xl font-black text-zinc-950">{{ rows[0].team.name }}</div>
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">当前第一</p>
+        <div class="mt-2 flex items-center gap-2">
+          <span class="text-2xl">🏆</span>
+          <span class="truncate text-2xl font-black text-zinc-950 sm:text-3xl">{{ rows[0].team.name }}</span>
+        </div>
         <div class="mt-5 grid grid-cols-3 gap-3 text-center">
-          <div class="rounded-xl bg-zinc-100 p-3"><div class="text-2xl font-black text-zinc-950">{{ rows[0].total }}</div><div class="text-xs text-muted">总票</div></div>
-          <div class="rounded-xl bg-zinc-100 p-3"><div class="text-2xl font-black text-zinc-950">{{ rows[0].peer_votes }}</div><div class="text-xs text-muted">互评</div></div>
-          <div class="rounded-xl bg-zinc-100 p-3"><div class="text-2xl font-black text-zinc-950">{{ rows[0].judge_score }}</div><div class="text-xs text-muted">评委票</div></div>
+          <div class="rounded-2xl bg-blue-50 p-3"><div class="text-2xl font-black text-blue-700">{{ rows[0].total }}</div><div class="mt-0.5 text-xs text-blue-500">总票</div></div>
+          <div class="rounded-2xl bg-purple-50 p-3"><div class="text-2xl font-black text-purple-700">{{ rows[0].peer_votes }}</div><div class="mt-0.5 text-xs text-purple-500">互评</div></div>
+          <div class="rounded-2xl bg-emerald-50 p-3"><div class="text-2xl font-black text-emerald-700">{{ rows[0].judge_score }}</div><div class="mt-0.5 text-xs text-emerald-500">评委票</div></div>
         </div>
       {% else %}
-        <p class="text-sm text-muted">当前第一</p>
-        <div class="mt-3 text-muted">暂无队伍</div>
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">当前第一</p>
+        <div class="mt-3 rounded-2xl bg-zinc-50 px-4 py-8 text-center text-zinc-400">暂无队伍</div>
       {% endif %}
-      <div class="mt-5 text-xs text-muted">最后刷新：{{ refreshed_at }}</div>
+      <div class="mt-6 flex items-center justify-between border-t border-line pt-4 text-xs text-zinc-400"><span>最后刷新</span><span class="font-semibold text-zinc-500">{{ refreshed_at }}</span></div>
     </div>
   </div>
 </section>
-
 {% if champion_id %}
   <div class="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-900 shadow-sm">
     冠军已确认：
@@ -98,7 +100,6 @@
     请在管理员后台开启平票加赛。
   </div>
 {% endif %}
-
 {% if demo_order %}
 <section class="relative mt-6 overflow-hidden rounded-[2rem] bg-[#f8fafc] shadow-xl ring-1 ring-line">
   <div class="absolute inset-0 opacity-80" style="background: radial-gradient(circle at 12% 20%, rgba(37,99,235,.14), transparent 28%), radial-gradient(circle at 88% 18%, rgba(16,185,129,.12), transparent 26%);"></div>
@@ -107,9 +108,9 @@
       <div>
         <p class="text-xs font-bold uppercase tracking-[0.3em] text-blue-700 sm:text-sm">Demo Order</p>
         <h2 class="mt-1 text-2xl font-black tracking-tight text-zinc-950 sm:text-3xl">路演顺序</h2>
-        <p class="mt-2 text-sm text-muted">按此顺序上台路演，请队长留意自己的位次。</p>
+        <p class="mt-2 text-sm text-zinc-500">按此顺序上台路演，请队长留意自己的位次。</p>
       </div>
-      {% if demo_order_at %}<span class="text-xs text-muted">生成时间：{{ demo_order_at }}</span>{% endif %}
+      {% if demo_order_at %}<span class="text-xs text-zinc-400">生成时间：{{ demo_order_at }}</span>{% endif %}
     </div>
     <div class="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {% for team in demo_order %}
@@ -122,52 +123,67 @@
   </div>
 </section>
 {% endif %}
-
-<section class="mt-6 overflow-hidden rounded-4xl border border-black/5 bg-white shadow-apple">
-  <div class="flex flex-col gap-2 border-b border-line px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-    <h2 class="text-lg font-semibold">全部队伍排名</h2>
-    <div class="text-sm text-muted">每 15 秒自动刷新一次</div>
+<section class="mt-6 overflow-hidden rounded-[2rem] border border-black/5 bg-white shadow-apple">
+  <div class="flex flex-col gap-2 border-b border-line bg-gradient-to-r from-zinc-50 to-white px-6 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+    <div>
+      <h2 class="text-2xl font-black tracking-tight text-zinc-950">全部队伍排名</h2>
+      <p class="mt-1 text-sm text-zinc-500">刚需 · 互评 · 评委票汇总，实时更新</p>
+    </div>
+    <div class="inline-flex items-center gap-2 self-start rounded-full bg-zinc-100 px-4 py-2 text-xs font-semibold text-zinc-500 sm:self-center"><span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>每 15 秒自动刷新</div>
   </div>
   <div class="overflow-x-auto">
-    <table class="w-full min-w-[760px] text-left text-sm">
-      <thead class="bg-zinc-50 text-xs uppercase tracking-wider text-muted"><tr><th class="px-5 py-4">排名</th><th>队伍</th><th>总票</th>{% if tie_round %}<th>平票</th>{% endif %}<th>刚需</th><th>互评</th><th>评委认可</th><th>评委票</th></tr></thead>
-      <tbody class="divide-y divide-line">
+    <table class="w-full min-w-[820px] text-left">
+<thead class="bg-zinc-50/80 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+        <tr>
+          <th class="px-6 py-4">排名</th>
+          <th class="py-4">队伍</th>
+          <th class="py-4">总票</th>
+          {% if tie_round %}<th class="py-4">平票</th>{% endif %}
+          <th class="py-4">刚需</th>
+          <th class="py-4">互评</th>
+          <th class="py-4">评委认可</th>
+          <th class="py-4 pr-6">评委票</th>
+        </tr>
+      </thead>
+<tbody class="divide-y divide-line">
         {% for row in rows %}
-        <tr class="{% if loop.index == 1 %}bg-yellow-50/80{% else %}bg-white{% endif %}">
-          <td class="px-5 py-5"><span class="grid h-9 w-9 place-items-center rounded-full {% if loop.index == 1 %}bg-yellow-400 text-yellow-950{% else %}bg-zinc-100 text-zinc-600{% endif %} font-bold">{{ loop.index }}</span></td>
-          <td>
-            <div class="font-semibold text-zinc-950">{{ row.team.name }}</div>
-            <div class="text-xs text-muted">报名顺序 #{{ row.team.order_index }}</div>
+        <tr class="transition-colors {% if loop.index == 1 %}bg-gradient-to-r from-amber-50 to-transparent{% else %}hover:bg-zinc-50/60{% endif %}">
+<td class="px-6 py-6">
+            <span class="grid h-11 w-11 place-items-center rounded-2xl text-lg font-black {% if loop.index == 1 %}bg-amber-400 text-amber-950 shadow-lg shadow-amber-200{% elif loop.index == 2 %}bg-zinc-200 text-zinc-700{% elif loop.index == 3 %}bg-orange-200 text-orange-800{% else %}bg-zinc-100 text-zinc-500{% endif %}">{{ loop.index }}</span>
+          </td>
+<td class="py-6">
+            <div class="flex items-center gap-2">
+              <span class="text-xl font-black text-zinc-950 sm:text-2xl">{{ row.team.name }}</span>
+              {% if loop.index == 1 %}<span class="text-lg">👑</span>{% endif %}
+            </div>
+            <div class="mt-1 text-xs text-zinc-400">报名顺序 #{{ row.team.order_index }}</div>
             {% if needs_tie_break and row.team.id in top_tied_ids %}
-              <div class="mt-1 text-xs font-semibold text-amber-700">并列第一</div>
+              <div class="mt-1.5 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700">并列第一</div>
             {% endif %}
           </td>
-          <td class="text-3xl font-black text-zinc-950">{{ row.total }}</td>
-          {% if tie_round %}
-          <td>
+<td class="py-6"><span class="text-4xl font-black text-zinc-950">{{ row.total }}</span></td>
+{% if tie_round %}
+          <td class="py-6">
             {% if tie_votes.get(row.team.id) is not none %}
-              <span class="rounded-full bg-red-50 px-3 py-1 font-semibold text-red-700">{{ tie_votes.get(row.team.id) }}</span>
+              <span class="rounded-full bg-red-50 px-3 py-1 text-sm font-bold text-red-700">{{ tie_votes.get(row.team.id) }}</span>
             {% else %}
-              <span class="text-muted">—</span>
+              <span class="text-zinc-300">—</span>
             {% endif %}
           </td>
           {% endif %}
-          <td><span class="rounded-full bg-blue-50 px-3 py-1 font-medium text-blue-700">{{ row.demand_vote }}</span></td>
-          <td><span class="rounded-full bg-purple-50 px-3 py-1 font-medium text-purple-700">{{ row.peer_votes }}</span></td>
-          <td>{{ row.judge_approvals }}</td>
-          <td><span class="rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-700">{{ row.judge_score }}</span></td>
+<td class="py-6"><span class="rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">{{ row.demand_vote }}</span></td>
+          <td class="py-6"><span class="rounded-full bg-purple-50 px-3 py-1 text-sm font-semibold text-purple-700">{{ row.peer_votes }}</span></td>
+          <td class="py-6 text-sm font-medium text-zinc-600">{{ row.judge_approvals }}</td>
+          <td class="py-6 pr-6"><span class="rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">{{ row.judge_score }}</span></td>
         </tr>
         {% else %}
-        <tr><td colspan="{{ 8 if tie_round else 7 }}" class="px-5 py-12 text-center text-muted">暂无队伍，请先在管理员后台录入。</td></tr>
+        <tr><td colspan="{{ 8 if tie_round else 7 }}" class="px-6 py-16 text-center text-zinc-400">暂无队伍，请先在管理员后台录入。</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </section>
-
 <script>
-  window.setTimeout(() => {
-    window.location.reload();
-  }, 15000);
+  window.setTimeout(() => { window.location.reload(); }, 15000);
 </script>
 {% endblock %}
