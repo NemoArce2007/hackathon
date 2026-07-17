@@ -28,36 +28,37 @@
       <span class="inline-flex items-center gap-[0.5vw] text-zinc-500"><span class="h-[1vh] w-[1vh] animate-pulse rounded-full bg-emerald-500"></span>{{ refreshed_at }}</span>
     </div>
   </header>
-  <div class="flex min-h-0 flex-1 flex-col gap-[0.7vh]">
-    {% for row in rows %}
-    {% set rk = loop.index %}
-    <div class="flex flex-1 items-center gap-[1.4vw] rounded-[1.4vh] px-[1.6vw] shadow-sm ring-1
-      {% if rk == 1 %}bg-gradient-to-r from-amber-50 to-white ring-amber-200
-      {% elif rk == 2 %}bg-gradient-to-r from-zinc-100 to-white ring-zinc-200
-      {% elif rk == 3 %}bg-gradient-to-r from-orange-50 to-white ring-orange-200
-      {% else %}bg-white ring-black/5{% endif %}">
-      <span class="grid h-[5.2vh] w-[5.2vh] shrink-0 place-items-center rounded-[1.2vh] text-[2.6vh] font-black
-        {% if rk == 1 %}bg-amber-400 text-amber-950
-        {% elif rk == 2 %}bg-zinc-300 text-zinc-800
-        {% elif rk == 3 %}bg-orange-300 text-orange-900
-        {% else %}bg-zinc-100 text-zinc-500{% endif %}">{{ rk }}</span>
-      <div class="flex min-w-0 flex-1 items-center gap-[0.8vw]">
-        <span class="truncate text-[3vh] font-black text-zinc-900">{{ row.team.name }}</span>
-        {% if rk == 1 %}<span class="text-[2.4vh]">👑</span>{% endif %}
-        {% if needs_tie_break and row.team.id in top_tied_ids %}<span class="shrink-0 rounded-full bg-amber-400 px-[0.7vw] py-[0.2vh] text-[1.3vh] font-bold text-amber-950">并列</span>{% endif %}
+  {% set top3 = rows[:3] %}
+  {% set order = [1, 0, 2] %}
+  {% set medals = ['🥇', '🥈', '🥉'] %}
+  {% set labels = ['冠军', '亚军', '季军'] %}
+  {% set card_h = ['h-[40vh]', 'h-[34vh]', 'h-[30vh]'] %}
+  {% set card_bg = ['from-amber-100 to-amber-50 ring-amber-300', 'from-zinc-100 to-white ring-zinc-300', 'from-orange-100 to-orange-50 ring-orange-300'] %}
+  {% set num_color = ['text-amber-500', 'text-zinc-400', 'text-orange-400'] %}
+  <div class="flex shrink-0 items-end justify-center gap-[1.4vw] pb-[1.4vh]">
+    {% for pos in order %}
+      {% if top3|length > pos %}
+        {% set row = top3[pos] %}
+        <div class="flex w-[22vw] flex-col items-center justify-end rounded-[1.8vh] bg-gradient-to-b px-[1.2vw] py-[1.6vh] shadow-md ring-1 {{ card_bg[pos] }} {{ card_h[pos] }}">
+          <div class="text-[5vh] leading-none">{{ medals[pos] }}</div>
+          <div class="mt-[0.8vh] text-[1.5vh] font-bold uppercase tracking-[0.25em] text-zinc-500">{{ labels[pos] }}</div>
+          <div class="mt-[0.6vh] w-full truncate text-center text-[3.2vh] font-black leading-tight text-zinc-900">{{ row.team.name }}</div>
+          <div class="mt-auto flex items-baseline gap-[0.4vw]"><span class="text-[6vh] font-black leading-none {{ num_color[pos] }}">{{ row.total }}</span><span class="text-[1.6vh] font-semibold text-zinc-400">票</span></div>
+          <div class="mt-[0.8vh] flex items-center gap-[0.5vw] text-[1.3vh] font-semibold text-zinc-500"><span>刚需 {{ row.demand_vote }}</span><span>·</span><span>互评 {{ row.peer_votes }}</span><span>·</span><span>评委 {{ row.judge_score }}</span></div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <div class="grid min-h-0 flex-1 grid-cols-4 gap-[0.9vw]">
+    {% for row in rows[3:] %}
+    <div class="flex items-center gap-[0.8vw] rounded-[1.2vh] bg-white px-[1vw] shadow-sm ring-1 ring-black/5">
+      <span class="grid h-[4.4vh] w-[4.4vh] shrink-0 place-items-center rounded-[1vh] bg-zinc-100 text-[2vh] font-black text-zinc-500">{{ loop.index + 3 }}</span>
+      <div class="flex min-w-0 flex-1 flex-col">
+        <span class="truncate text-[2.1vh] font-black leading-tight text-zinc-900">{{ row.team.name }}</span>
+        <span class="text-[1.2vh] font-semibold text-zinc-400">刚需{{ row.demand_vote }} · 互评{{ row.peer_votes }} · 评委{{ row.judge_score }}</span>
       </div>
-      <div class="flex shrink-0 items-center gap-[0.6vw]">
-        <span class="rounded-[0.9vh] bg-blue-50 px-[0.9vw] py-[0.6vh] text-[1.5vh] font-bold text-blue-700">刚需 {{ row.demand_vote }}</span>
-        <span class="rounded-[0.9vh] bg-purple-50 px-[0.9vw] py-[0.6vh] text-[1.5vh] font-bold text-purple-700">互评 {{ row.peer_votes }}</span>
-        <span class="rounded-[0.9vh] bg-emerald-50 px-[0.9vw] py-[0.6vh] text-[1.5vh] font-bold text-emerald-700">评委 {{ row.judge_score }}</span>
-      </div>
-      <div class="flex w-[11vw] shrink-0 items-baseline justify-end gap-[0.5vw]">
-        <span class="text-[4.4vh] font-black leading-none text-zinc-900">{{ row.total }}</span>
-        <span class="text-[1.4vh] font-semibold text-zinc-400">票</span>
-      </div>
+      <div class="flex shrink-0 items-baseline gap-[0.3vw]"><span class="text-[3.4vh] font-black leading-none text-zinc-900">{{ row.total }}</span><span class="text-[1.2vh] font-semibold text-zinc-400">票</span></div>
     </div>
-    {% else %}
-    <div class="flex flex-1 items-center justify-center text-[2vh] text-zinc-400">暂无队伍</div>
     {% endfor %}
   </div>
 </div>
