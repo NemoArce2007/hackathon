@@ -59,7 +59,7 @@
             <span class="text-[4vh] font-black leading-none text-white" style="text-shadow:0 1px 3px rgba(0,0,0,.25);">{{ pos + 1 }}</span>
           </div>
           <div class="relative z-10 mt-[0.8vh] text-[1.4vh] font-bold uppercase tracking-[0.25em] text-slate-400">{{ labels[pos] }}</div>
-          <div class="relative z-10 mt-[0.5vh] w-full truncate text-center text-[3vh] font-black leading-tight text-slate-900" data-team-id="{{ row.team.id }}" data-field="name">{{ row.team.name }}</div>
+          <div class="relative z-10 mt-[0.5vh] line-clamp-2 w-full text-center text-[3vh] font-black leading-[1.1] text-slate-900" style="word-break:break-word;" data-team-id="{{ row.team.id }}" data-field="name">{{ row.team.name }}</div>
           <div class="relative z-10 mt-[0.3vh] flex items-baseline gap-[0.4vw]"><span class="text-[6.5vh] font-black leading-none {{ num_color[pos] }}" data-team-id="{{ row.team.id }}" data-field="total">{{ row.total }}</span><span class="text-[1.6vh] font-semibold text-slate-400">票</span></div>
           <div class="relative z-10 mt-[0.6vh] flex items-center gap-[0.6vw] text-[1.3vh] font-semibold">
             <span class="inline-flex items-center gap-[0.3vw] text-[#2563EB]"><span class="h-[1vh] w-[1vh] rounded-sm bg-[#2563EB]"></span><span data-team-id="{{ row.team.id }}" data-field="demand_vote">{{ row.demand_vote }}</span></span>
@@ -71,6 +71,11 @@
     {% endfor %}
   </div>
   {% set champ_total = top3[0].total if top3 else 0 %}
+  <div class="flex shrink-0 items-center justify-end gap-[1.4vw] pb-[0.9vh] text-[1.4vh] font-semibold text-slate-500">
+    <span class="inline-flex items-center gap-[0.4vw]"><span class="h-[1.2vh] w-[1.2vh] rounded-sm bg-[#2563EB]"></span>刚需</span>
+    <span class="inline-flex items-center gap-[0.4vw]"><span class="h-[1.2vh] w-[1.2vh] rounded-sm bg-[#7C3AED]"></span>互评</span>
+    <span class="inline-flex items-center gap-[0.4vw]"><span class="h-[1.2vh] w-[1.2vh] rounded-sm bg-[#D97706]"></span>评委</span>
+  </div>
   <div class="grid min-h-0 flex-1 grid-cols-2 grid-rows-4 gap-x-[1.2vw] gap-y-[1vh]">
     {% for row in rows[3:] %}
     {% set rk = loop.index + 3 %}
@@ -78,8 +83,8 @@
       <span class="grid h-[4.6vh] w-[4.6vh] shrink-0 place-items-center rounded-full text-[2.2vh] font-black {% if rk <= 10 %}bg-slate-200 text-slate-600{% else %}bg-slate-100 text-slate-400{% endif %}">{{ rk }}</span>
       <span class="grid h-[5vh] w-[5vh] shrink-0 place-items-center rounded-full text-[2.1vh] font-black text-white {{ avatar_palette[loop.index0 % 11] }}">{{ row.team.name[:1] }}</span>
       <div class="flex min-w-0 flex-1 flex-col justify-center gap-[1vh]">
-        <span class="truncate text-[2.6vh] font-black leading-tight text-slate-900" data-team-id="{{ row.team.id }}" data-field="name">{{ row.team.name }}</span>
-        <div class="bar-wrap flex h-[1.8vh] overflow-hidden rounded-full bg-slate-100" data-team-id="{{ row.team.id }}" data-field="bar" style="width: {{ ((row.total / champ_total * 100) if champ_total else 0)|round(1) }}%;">
+        <span class="line-clamp-2 text-[2.6vh] font-black leading-[1.1] text-slate-900" style="word-break:break-word;" data-team-id="{{ row.team.id }}" data-field="name">{{ row.team.name }}</span>
+        <div class="bar-wrap flex h-[1.8vh] overflow-hidden rounded-full bg-slate-100" data-team-id="{{ row.team.id }}" data-field="bar" style="width: {{ ((row.total / champ_total * 100) if champ_total else 0)|round(1) }}%; min-width: 2.5vw;">
           <span class="seg-fill bg-[#2563EB]" data-seg="demand_vote" style="flex-grow: {{ row.demand_vote }};"></span>
           <span class="seg-fill bg-[#7C3AED]" data-seg="peer_votes" style="flex-grow: {{ row.peer_votes }};"></span>
           <span class="seg-fill bg-[#D97706]" data-seg="judge_score" style="flex-grow: {{ row.judge_score }};"></span>
