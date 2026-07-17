@@ -7,56 +7,58 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   html,body{height:100%;}
-  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Helvetica,Arial,sans-serif;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:-0.01em;}
 </style>
 </head>
-<body class="h-full overflow-hidden bg-zinc-950 text-white">
+<body class="h-full overflow-hidden bg-[#f5f5f7] text-zinc-900">
 <div class="flex h-full flex-col px-[2vw] py-[1.6vh]">
-  <header class="flex shrink-0 items-center justify-between pb-[1.2vh]">
+  <header class="flex shrink-0 items-center justify-between pb-[1.4vh]">
     <div class="flex items-baseline gap-[1vw]">
-      <span class="text-[2.4vh] font-black tracking-tight text-white">实时榜单</span>
-      <span class="text-[1.4vh] font-semibold uppercase tracking-[0.3em] text-blue-400">FastForward Live</span>
+      <span class="text-[2.6vh] font-black tracking-tight text-zinc-900">实时榜单</span>
+      <span class="text-[1.4vh] font-bold uppercase tracking-[0.3em] text-blue-600">FastForward Live</span>
     </div>
-    <div class="flex items-center gap-[1vw] text-[1.4vh]">
+    <div class="flex items-center gap-[1vw] text-[1.4vh] font-semibold">
       {% if champion_id %}
-        <span class="rounded-full bg-emerald-500 px-[1vw] py-[0.4vh] font-bold text-white">冠军已确认</span>
+        <span class="rounded-full bg-emerald-500 px-[1.1vw] py-[0.5vh] text-white">冠军已确认</span>
       {% elif active_round %}
-        <span class="rounded-full bg-red-500 px-[1vw] py-[0.4vh] font-bold text-white">第 {{ active_round.round_no }} 轮加赛中</span>
+        <span class="rounded-full bg-red-500 px-[1.1vw] py-[0.5vh] text-white">第 {{ active_round.round_no }} 轮加赛中</span>
       {% elif needs_tie_break %}
-        <span class="rounded-full bg-amber-400 px-[1vw] py-[0.4vh] font-bold text-amber-950">第一名并列</span>
+        <span class="rounded-full bg-amber-400 px-[1.1vw] py-[0.5vh] text-amber-950">第一名并列</span>
       {% endif %}
-      <span class="inline-flex items-center gap-[0.5vw] text-zinc-400"><span class="h-[1vh] w-[1vh] animate-pulse rounded-full bg-emerald-400"></span>{{ refreshed_at }}</span>
+      <span class="inline-flex items-center gap-[0.5vw] text-zinc-500"><span class="h-[1vh] w-[1vh] animate-pulse rounded-full bg-emerald-500"></span>{{ refreshed_at }}</span>
     </div>
   </header>
-  <div class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.4vh] ring-1 ring-white/10">
-    <div class="grid shrink-0 grid-cols-[7vw_1fr_10vw_9vw_9vw_9vw] items-center bg-white/5 px-[1.5vw] py-[0.9vh] text-[1.3vh] font-bold uppercase tracking-widest text-zinc-400">
-      <div>排名</div>
-      <div>队伍</div>
-      <div class="text-center">总票</div>
-      <div class="text-center">刚需</div>
-      <div class="text-center">互评</div>
-      <div class="text-center">评委票</div>
-    </div>
-    <div class="flex min-h-0 flex-1 flex-col">
-      {% for row in rows %}
-      <div class="grid flex-1 grid-cols-[7vw_1fr_10vw_9vw_9vw_9vw] items-center border-t border-white/5 px-[1.5vw] {% if loop.index == 1 %}bg-gradient-to-r from-amber-400/20 to-transparent{% endif %}">
-        <div>
-          <span class="grid h-[4vh] w-[4vh] place-items-center rounded-[1vh] text-[2vh] font-black {% if loop.index == 1 %}bg-amber-400 text-amber-950{% elif loop.index == 2 %}bg-zinc-300 text-zinc-800{% elif loop.index == 3 %}bg-orange-300 text-orange-900{% else %}bg-white/10 text-zinc-300{% endif %}">{{ loop.index }}</span>
-        </div>
-        <div class="flex items-center gap-[0.8vw] truncate">
-          <span class="truncate text-[2.6vh] font-black text-white">{{ row.team.name }}</span>
-          {% if loop.index == 1 %}<span class="text-[2vh]">👑</span>{% endif %}
-          {% if needs_tie_break and row.team.id in top_tied_ids %}<span class="rounded-full bg-amber-400/90 px-[0.6vw] py-[0.2vh] text-[1.2vh] font-bold text-amber-950">并列</span>{% endif %}
-        </div>
-        <div class="text-center text-[3.4vh] font-black text-white">{{ row.total }}</div>
-        <div class="text-center text-[2vh] font-semibold text-blue-300">{{ row.demand_vote }}</div>
-        <div class="text-center text-[2vh] font-semibold text-purple-300">{{ row.peer_votes }}</div>
-        <div class="text-center text-[2vh] font-semibold text-emerald-300">{{ row.judge_score }}</div>
+  <div class="flex min-h-0 flex-1 flex-col gap-[0.7vh]">
+    {% for row in rows %}
+    {% set rk = loop.index %}
+    <div class="flex flex-1 items-center gap-[1.4vw] rounded-[1.4vh] px-[1.6vw] shadow-sm ring-1
+      {% if rk == 1 %}bg-gradient-to-r from-amber-50 to-white ring-amber-200
+      {% elif rk == 2 %}bg-gradient-to-r from-zinc-100 to-white ring-zinc-200
+      {% elif rk == 3 %}bg-gradient-to-r from-orange-50 to-white ring-orange-200
+      {% else %}bg-white ring-black/5{% endif %}">
+      <span class="grid h-[5.2vh] w-[5.2vh] shrink-0 place-items-center rounded-[1.2vh] text-[2.6vh] font-black
+        {% if rk == 1 %}bg-amber-400 text-amber-950
+        {% elif rk == 2 %}bg-zinc-300 text-zinc-800
+        {% elif rk == 3 %}bg-orange-300 text-orange-900
+        {% else %}bg-zinc-100 text-zinc-500{% endif %}">{{ rk }}</span>
+      <div class="flex min-w-0 flex-1 items-center gap-[0.8vw]">
+        <span class="truncate text-[3vh] font-black text-zinc-900">{{ row.team.name }}</span>
+        {% if rk == 1 %}<span class="text-[2.4vh]">👑</span>{% endif %}
+        {% if needs_tie_break and row.team.id in top_tied_ids %}<span class="shrink-0 rounded-full bg-amber-400 px-[0.7vw] py-[0.2vh] text-[1.3vh] font-bold text-amber-950">并列</span>{% endif %}
       </div>
-      {% else %}
-      <div class="flex flex-1 items-center justify-center text-[2vh] text-zinc-500">暂无队伍</div>
-      {% endfor %}
+      <div class="flex shrink-0 items-center gap-[0.6vw]">
+        <span class="rounded-[0.9vh] bg-blue-50 px-[0.9vw] py-[0.6vh] text-[1.5vh] font-bold text-blue-700">刚需 {{ row.demand_vote }}</span>
+        <span class="rounded-[0.9vh] bg-purple-50 px-[0.9vw] py-[0.6vh] text-[1.5vh] font-bold text-purple-700">互评 {{ row.peer_votes }}</span>
+        <span class="rounded-[0.9vh] bg-emerald-50 px-[0.9vw] py-[0.6vh] text-[1.5vh] font-bold text-emerald-700">评委 {{ row.judge_score }}</span>
+      </div>
+      <div class="flex w-[11vw] shrink-0 items-baseline justify-end gap-[0.5vw]">
+        <span class="text-[4.4vh] font-black leading-none text-zinc-900">{{ row.total }}</span>
+        <span class="text-[1.4vh] font-semibold text-zinc-400">票</span>
+      </div>
     </div>
+    {% else %}
+    <div class="flex flex-1 items-center justify-center text-[2vh] text-zinc-400">暂无队伍</div>
+    {% endfor %}
   </div>
 </div>
 <script>window.setTimeout(function(){window.location.reload();},15000);</script>
