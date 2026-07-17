@@ -526,7 +526,32 @@ def peer_assignment_rows():
     return rows
 
 
+def tie_break_ranking():
+    """返回 {team_id: (max_round_no, votes_in_that_round)}，用于在普通总分并列时决出名次。
+
+    多轮加赛中，越晚的轮次越具决定性（下一轮从上一轮的最高票并列者中再选），
+    因此以每支队参与过的最大轮次为准，取其在该轮的得票数。未参加过加赛的队为 (0, 0)。
+    """
+    rows = get_db().execute(
+        """
+        SELECT c.team_id AS team_id, r.round_no AS round_no, COUNT(v.id) AS votes
+        FROM tie_break_candidates c
+        JOIN tie_break_rounds r ON r.id = c.round_id
+        LEFT JOIN tie_break_votes v ON v.round_id = c.round_id AND v.team_id = c.team_id
+        GROUP BY c.team_id, r.round_no
+        """
+    ).fetchall()
+    ranking = {}
+    for row in rows:
+        current = ranking.get(row["team_id"])
+        if current is None or row["round_no"] > current[0]:
+            ranking[row["team_id"]] = (row["round_no"], row["votes"])
+    return ranking
+
+
 def score_rows():
+    champion_id = get_setting("champion_team_id", "")
+    tie_rank = tie_break_ranking()
     rows = []
     for team in ordered_teams():
         peer_count = get_db().execute(
@@ -537,8 +562,27 @@ def score_rows():
         ).fetchone()["count"]
         judge_score = judge_approvals * 2
         total = team["demand_vote"] + peer_count + judge_score
-        rows.append({"team": team, "demand_vote": team["demand_vote"], "peer_votes": peer_count, "judge_approvals": judge_approvals, "judge_score": judge_score, "total": total})
-    return sorted(rows, key=lambda row: (-row["total"], row["team"]["order_index"]))
+        tie_round_no, tie_votes = tie_rank.get(team["id"], (0, 0))
+        rows.append({
+            "team": team,
+            "demand_vote": team["demand_vote"],
+            "peer_votes": peer_count,
+            "judge_approvals": judge_approvals,
+            "judge_score": judge_score,
+            "total": total,
+            "tie_round_no": tie_round_no,
+            "tie_votes": tie_votes,
+        })
+    return sorted(
+        rows,
+        key=lambda row: (
+            0 if champion_id and str(row["team"]["id"]) == str(champion_id) else 1,
+            -row["total"],
+            -row["tie_round_no"],
+            -row["tie_votes"],
+            row["team"]["order_index"],
+        ),
+    )
 
 
 def top_tied_teams():
@@ -713,6 +757,27 @@ def leaderboard():
         champion_id=state["champion_id"],
         champion_confirmed_at=state["champion_confirmed_at"],
         top_tied_teams=state["top_tied_teams"],
+        top_tied_ids=state["top_tied_ids"],
+        needs_tie_break=state["needs_tie_break"],
+        refreshed_at=datetime.now().strftime("%H:%M:%S"),
+    )
+
+
+@app.route("/board")
+def board():
+    """大屏滚榜面板：一屏展示全部队伍，无导航、精简头部。"""
+    state = leaderboard_state()
+    active = active_round()
+    tie_round = active or latest_closed_round()
+    tie_votes = {row["id"]: row["votes"] for row in tie_results(tie_round["id"])} if tie_round else {}
+    return render_template(
+        "board.html",
+        rows=state["rows"],
+        active_round=active,
+        tie_round=tie_round,
+        tie_votes=tie_votes,
+        champion_id=state["champion_id"],
+        champion_confirmed_at=state["champion_confirmed_at"],
         top_tied_ids=state["top_tied_ids"],
         needs_tie_break=state["needs_tie_break"],
         refreshed_at=datetime.now().strftime("%H:%M:%S"),

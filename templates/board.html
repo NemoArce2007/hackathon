@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>实时滚榜大屏</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  html,body{height:100%;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Helvetica,Arial,sans-serif;}
+</style>
+</head>
+<body class="h-full overflow-hidden bg-zinc-950 text-white">
+<div class="flex h-full flex-col px-[2vw] py-[1.6vh]">
+  <header class="flex shrink-0 items-center justify-between pb-[1.2vh]">
+    <div class="flex items-baseline gap-[1vw]">
+      <span class="text-[2.4vh] font-black tracking-tight text-white">实时榜单</span>
+      <span class="text-[1.4vh] font-semibold uppercase tracking-[0.3em] text-blue-400">FastForward Live</span>
+    </div>
+    <div class="flex items-center gap-[1vw] text-[1.4vh]">
+      {% if champion_id %}
+        <span class="rounded-full bg-emerald-500 px-[1vw] py-[0.4vh] font-bold text-white">冠军已确认</span>
+      {% elif active_round %}
+        <span class="rounded-full bg-red-500 px-[1vw] py-[0.4vh] font-bold text-white">第 {{ active_round.round_no }} 轮加赛中</span>
+      {% elif needs_tie_break %}
+        <span class="rounded-full bg-amber-400 px-[1vw] py-[0.4vh] font-bold text-amber-950">第一名并列</span>
+      {% endif %}
+      <span class="inline-flex items-center gap-[0.5vw] text-zinc-400"><span class="h-[1vh] w-[1vh] animate-pulse rounded-full bg-emerald-400"></span>{{ refreshed_at }}</span>
+    </div>
+  </header>
+  <div class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.4vh] ring-1 ring-white/10">
+    <div class="grid shrink-0 grid-cols-[7vw_1fr_10vw_9vw_9vw_9vw] items-center bg-white/5 px-[1.5vw] py-[0.9vh] text-[1.3vh] font-bold uppercase tracking-widest text-zinc-400">
+      <div>排名</div>
+      <div>队伍</div>
+      <div class="text-center">总票</div>
+      <div class="text-center">刚需</div>
+      <div class="text-center">互评</div>
+      <div class="text-center">评委票</div>
+    </div>
+    <div class="flex min-h-0 flex-1 flex-col">
+      {% for row in rows %}
+      <div class="grid flex-1 grid-cols-[7vw_1fr_10vw_9vw_9vw_9vw] items-center border-t border-white/5 px-[1.5vw] {% if loop.index == 1 %}bg-gradient-to-r from-amber-400/20 to-transparent{% endif %}">
+        <div>
+          <span class="grid h-[4vh] w-[4vh] place-items-center rounded-[1vh] text-[2vh] font-black {% if loop.index == 1 %}bg-amber-400 text-amber-950{% elif loop.index == 2 %}bg-zinc-300 text-zinc-800{% elif loop.index == 3 %}bg-orange-300 text-orange-900{% else %}bg-white/10 text-zinc-300{% endif %}">{{ loop.index }}</span>
+        </div>
+        <div class="flex items-center gap-[0.8vw] truncate">
+          <span class="truncate text-[2.6vh] font-black text-white">{{ row.team.name }}</span>
+          {% if loop.index == 1 %}<span class="text-[2vh]">👑</span>{% endif %}
+          {% if needs_tie_break and row.team.id in top_tied_ids %}<span class="rounded-full bg-amber-400/90 px-[0.6vw] py-[0.2vh] text-[1.2vh] font-bold text-amber-950">并列</span>{% endif %}
+        </div>
+        <div class="text-center text-[3.4vh] font-black text-white">{{ row.total }}</div>
+        <div class="text-center text-[2vh] font-semibold text-blue-300">{{ row.demand_vote }}</div>
+        <div class="text-center text-[2vh] font-semibold text-purple-300">{{ row.peer_votes }}</div>
+        <div class="text-center text-[2vh] font-semibold text-emerald-300">{{ row.judge_score }}</div>
+      </div>
+      {% else %}
+      <div class="flex flex-1 items-center justify-center text-[2vh] text-zinc-500">暂无队伍</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+<script>window.setTimeout(function(){window.location.reload();},15000);</script>
+</body>
+</html>
