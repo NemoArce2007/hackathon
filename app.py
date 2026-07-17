@@ -9,7 +9,7 @@ from functools import wraps
 from urllib.parse import urlencode
 
 import requests
-from flask import Flask, abort, flash, g, redirect, render_template, request, session, url_for
+from flask import Flask, abort, flash, g, jsonify, redirect, render_template, request, session, url_for
 
 
 def load_local_env(path=".env.local"):
@@ -765,23 +765,45 @@ def leaderboard():
 
 @app.route("/board")
 def board():
-    """大屏滚榜面板：一屏展示全部队伍，无导航、精简头部。"""
+    """大屏滚榜面板：首屏渲染 + 前端每 5 秒拉 /board/data 局部刷新。"""
     state = leaderboard_state()
     active = active_round()
-    tie_round = active or latest_closed_round()
-    tie_votes = {row["id"]: row["votes"] for row in tie_results(tie_round["id"])} if tie_round else {}
     return render_template(
         "board.html",
         rows=state["rows"],
         active_round=active,
-        tie_round=tie_round,
-        tie_votes=tie_votes,
         champion_id=state["champion_id"],
         champion_confirmed_at=state["champion_confirmed_at"],
         top_tied_ids=state["top_tied_ids"],
         needs_tie_break=state["needs_tie_break"],
         refreshed_at=datetime.now().strftime("%H:%M:%S"),
     )
+
+
+@app.route("/board/data")
+def board_data():
+    """大屏面板数据端点：返回 JSON，供前端每 5 秒无刷新更新。"""
+    state = leaderboard_state()
+    active = active_round()
+    rows = []
+    for index, row in enumerate(state["rows"], start=1):
+        rows.append({
+            "rank": index,
+            "id": row["team"]["id"],
+            "name": row["team"]["name"],
+            "total": row["total"],
+            "demand_vote": row["demand_vote"],
+            "peer_votes": row["peer_votes"],
+            "judge_score": row["judge_score"],
+        })
+    return jsonify({
+        "champion_id": state["champion_id"],
+        "active_round_no": active["round_no"] if active else None,
+        "needs_tie_break": state["needs_tie_break"],
+        "top_tied_ids": state["top_tied_ids"],
+        "refreshed_at": datetime.now().strftime("%H:%M:%S"),
+        "rows": rows,
+    })
 
 
 @app.route("/timer")
