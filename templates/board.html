@@ -7,20 +7,24 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   html,body{height:100%;}
-  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:-0.01em;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:-0.01em;
+    background-color:#FAFBFC;
+    background-image:radial-gradient(rgba(15,23,42,0.05) 1px, transparent 1px);
+    background-size:22px 22px;}
   @keyframes crownGlow{0%,100%{opacity:.55;transform:scale(1);}50%{opacity:.95;transform:scale(1.06);}}
   .crown-glow{animation:crownGlow 3.2s ease-in-out infinite;}
-  @keyframes popHi{0%{transform:scale(1);}30%{transform:scale(1.22);color:#2563eb;}100%{transform:scale(1);}}
+  @keyframes popHi{0%{transform:scale(1);}30%{transform:scale(1.22);color:#2563EB;}100%{transform:scale(1);}}
   .pop-hi{animation:popHi .45s ease-out;}
-  .bar-fill{transition:width .6s cubic-bezier(.22,1,.36,1);}
+  .seg-fill{transition:flex-grow .6s cubic-bezier(.22,1,.36,1);}
+  .bar-wrap{transition:width .6s cubic-bezier(.22,1,.36,1);}
 </style>
 </head>
-<body class="h-full overflow-hidden bg-[#f5f5f7] text-zinc-900">
+<body class="h-full overflow-hidden text-slate-900">
 <div class="flex h-full flex-col px-[2vw] py-[1.6vh]">
   <header class="flex shrink-0 items-center justify-between pb-[1.4vh]">
     <div class="flex items-baseline gap-[1vw]">
-      <span class="text-[2.6vh] font-black tracking-tight text-zinc-900">实时榜单</span>
-      <span class="text-[1.4vh] font-bold uppercase tracking-[0.3em] text-blue-600">FastForward Live</span>
+      <span class="text-[2.8vh] font-black tracking-tight text-slate-900">实时榜单</span>
+      <span class="text-[1.4vh] font-bold uppercase tracking-[0.3em] text-[#2563EB]">FastForward Live</span>
     </div>
     <div class="flex items-center gap-[1vw] text-[1.4vh] font-semibold">
       {% if champion_id %}
@@ -30,49 +34,58 @@
       {% elif needs_tie_break %}
         <span class="rounded-full bg-amber-400 px-[1.1vw] py-[0.5vh] text-amber-950">第一名并列</span>
       {% endif %}
-      <span class="inline-flex items-center gap-[0.5vw] text-zinc-500"><span class="h-[1vh] w-[1vh] animate-pulse rounded-full bg-emerald-500"></span><span id="refreshedAt">{{ refreshed_at }}</span></span>
+      <span class="inline-flex items-center gap-[0.5vw] rounded-full bg-white px-[1vw] py-[0.5vh] text-slate-500 shadow-sm ring-1 ring-slate-900/5"><span class="h-[1vh] w-[1vh] animate-pulse rounded-full bg-emerald-500"></span><span id="refreshedAt">{{ refreshed_at }}</span></span>
     </div>
   </header>
+  {% set avatar_palette = ['bg-blue-500','bg-violet-500','bg-amber-500','bg-emerald-500','bg-rose-500','bg-cyan-500','bg-fuchsia-500','bg-indigo-500','bg-teal-500','bg-orange-500','bg-pink-500'] %}
   {% set top3 = rows[:3] %}
   {% set order = [1, 0, 2] %}
   {% set labels = ['冠军', '亚军', '季军'] %}
   {% set card_h = ['h-[40vh]', 'h-[34vh]', 'h-[30vh]'] %}
-  {% set medal_ring = ['ring-amber-300 shadow-amber-200', 'ring-zinc-300 shadow-zinc-200', 'ring-orange-300 shadow-orange-200'] %}
-  {% set medal_grad = ['from-amber-300 to-amber-500', 'from-zinc-200 to-zinc-400', 'from-orange-300 to-orange-500'] %}
-  {% set card_bg = ['from-amber-50 to-white ring-amber-200', 'from-zinc-50 to-white ring-zinc-200', 'from-orange-50 to-white ring-orange-200'] %}
-  {% set num_color = ['text-amber-500', 'text-zinc-500', 'text-orange-500'] %}
+  {% set card_bg = ['from-[#FEF3C7] to-white ring-amber-200', 'from-slate-100 to-white ring-slate-200', 'from-orange-100 to-white ring-orange-200'] %}
+  {% set medal_grad = ['from-amber-300 to-amber-500 shadow-amber-200', 'from-slate-200 to-slate-400 shadow-slate-200', 'from-orange-300 to-orange-500 shadow-orange-200'] %}
+  {% set num_color = ['text-[#D97706]', 'text-slate-500', 'text-orange-500'] %}
   <div class="flex shrink-0 items-end justify-center gap-[1.4vw] pb-[1.4vh]">
     {% for pos in order %}
       {% if top3|length > pos %}
         {% set row = top3[pos] %}
-        <div class="relative flex w-[22vw] flex-col items-center justify-end rounded-[1.8vh] bg-gradient-to-b px-[1.2vw] py-[1.6vh] shadow-md ring-1 {{ card_bg[pos] }} {{ card_h[pos] }}">
+        <div class="relative flex w-[22vw] flex-col items-center justify-end rounded-[1.2vh] bg-gradient-to-b px-[1.2vw] py-[1.6vh] ring-1 {{ card_bg[pos] }} {{ card_h[pos] }}" style="box-shadow:0 4px 20px rgba(0,0,0,0.08);">
           {% if pos == 0 %}
             <div class="crown-glow pointer-events-none absolute inset-x-0 top-0 h-[16vh] bg-gradient-to-b from-amber-200/70 to-transparent blur-2xl"></div>
-            <div class="absolute -top-[3.4vh] text-[3.4vh] leading-none">👑</div>
+            <div class="absolute -top-[3.4vh] z-10 text-[3.4vh] leading-none">👑</div>
+            <div class="absolute right-[1vw] top-[1.4vh] z-10 rounded-full bg-[#D97706] px-[0.8vw] py-[0.3vh] text-[1.2vh] font-bold uppercase tracking-[0.2em] text-white shadow-sm">冠军</div>
           {% endif %}
-          <div class="relative z-10 grid h-[8vh] w-[8vh] place-items-center rounded-full bg-gradient-to-br shadow-lg ring-4 ring-white {{ medal_grad[pos] }} {{ medal_ring[pos] }}">
+          <div class="relative z-10 grid h-[8vh] w-[8vh] place-items-center rounded-full bg-gradient-to-br shadow-lg ring-4 ring-white {{ medal_grad[pos] }}">
             <span class="text-[4vh] font-black leading-none text-white" style="text-shadow:0 1px 3px rgba(0,0,0,.25);">{{ pos + 1 }}</span>
           </div>
-          <div class="relative z-10 mt-[0.8vh] text-[1.5vh] font-bold uppercase tracking-[0.25em] text-zinc-500">{{ labels[pos] }}</div>
-          <div class="relative z-10 mt-[0.6vh] w-full truncate text-center text-[3.2vh] font-black leading-tight text-zinc-900" data-team-id="{{ row.team.id }}" data-field="name">{{ row.team.name }}</div>
-          <div class="relative z-10 mt-auto flex items-baseline gap-[0.4vw]"><span class="text-[6vh] font-black leading-none {{ num_color[pos] }}" data-team-id="{{ row.team.id }}" data-field="total">{{ row.total }}</span><span class="text-[1.6vh] font-semibold text-zinc-400">票</span></div>
-          <div class="relative z-10 mt-[0.8vh] flex items-center gap-[0.5vw] text-[1.3vh] font-semibold text-zinc-500"><span data-team-id="{{ row.team.id }}" data-field="demand_vote">刚需 {{ row.demand_vote }}</span><span>·</span><span data-team-id="{{ row.team.id }}" data-field="peer_votes">互评 {{ row.peer_votes }}</span><span>·</span><span data-team-id="{{ row.team.id }}" data-field="judge_score">评委 {{ row.judge_score }}</span></div>
+          <div class="relative z-10 mt-[0.8vh] text-[1.4vh] font-bold uppercase tracking-[0.25em] text-slate-400">{{ labels[pos] }}</div>
+          <div class="relative z-10 mt-[0.5vh] w-full truncate text-center text-[3vh] font-black leading-tight text-slate-900" data-team-id="{{ row.team.id }}" data-field="name">{{ row.team.name }}</div>
+          <div class="relative z-10 mt-auto flex items-baseline gap-[0.4vw]"><span class="text-[6vh] font-black leading-none {{ num_color[pos] }}" data-team-id="{{ row.team.id }}" data-field="total">{{ row.total }}</span><span class="text-[1.6vh] font-semibold text-slate-400">票</span></div>
+          <div class="relative z-10 mt-[0.6vh] flex items-center gap-[0.6vw] text-[1.3vh] font-semibold">
+            <span class="inline-flex items-center gap-[0.3vw] text-[#2563EB]"><span class="h-[1vh] w-[1vh] rounded-sm bg-[#2563EB]"></span><span data-team-id="{{ row.team.id }}" data-field="demand_vote">{{ row.demand_vote }}</span></span>
+            <span class="inline-flex items-center gap-[0.3vw] text-[#7C3AED]"><span class="h-[1vh] w-[1vh] rounded-sm bg-[#7C3AED]"></span><span data-team-id="{{ row.team.id }}" data-field="peer_votes">{{ row.peer_votes }}</span></span>
+            <span class="inline-flex items-center gap-[0.3vw] text-[#D97706]"><span class="h-[1vh] w-[1vh] rounded-sm bg-[#D97706]"></span><span data-team-id="{{ row.team.id }}" data-field="judge_score">{{ row.judge_score }}</span></span>
+          </div>
         </div>
       {% endif %}
     {% endfor %}
   </div>
   {% set champ_total = top3[0].total if top3 else 0 %}
-  <div class="grid min-h-0 flex-1 grid-cols-4 gap-[0.9vw]">
+  <div class="grid min-h-0 flex-1 grid-cols-2 gap-x-[1.2vw] gap-y-[0.8vh] content-start">
     {% for row in rows[3:] %}
-    <div class="flex items-center gap-[0.8vw] rounded-[1.2vh] bg-white px-[1vw] py-[0.6vh] shadow-sm ring-1 ring-black/5">
-      <span class="grid h-[4vh] w-[4vh] shrink-0 place-items-center rounded-[1vh] bg-zinc-100 text-[1.9vh] font-black text-zinc-500">{{ loop.index + 3 }}</span>
-      <div class="flex min-w-0 flex-1 flex-col justify-center gap-[0.4vh]">
-        <span class="truncate text-[2vh] font-black leading-tight text-zinc-900" data-team-id="{{ row.team.id }}" data-field="name">{{ row.team.name }}</span>
-        <div class="h-[0.8vh] w-full overflow-hidden rounded-full bg-zinc-100">
-          <div class="bar-fill h-full rounded-full bg-gradient-to-r from-blue-500 to-amber-400" data-team-id="{{ row.team.id }}" data-field="bar" style="width: {{ ((row.total / champ_total * 100) if champ_total else 0)|round(1) }}%; min-width: {% if row.total == 0 %}0.3vw{% else %}0.3vw{% endif %};"></div>
+    {% set rk = loop.index + 3 %}
+    <div class="flex items-center gap-[0.9vw] rounded-[1vh] bg-white px-[1vw] py-[0.7vh] shadow-sm ring-1 ring-slate-900/5">
+      <span class="grid h-[3.6vh] w-[3.6vh] shrink-0 place-items-center rounded-full text-[1.7vh] font-black {% if rk <= 10 %}bg-slate-200 text-slate-600{% else %}bg-slate-100 text-slate-400{% endif %}">{{ rk }}</span>
+      <span class="grid h-[3.8vh] w-[3.8vh] shrink-0 place-items-center rounded-full text-[1.6vh] font-black text-white {{ avatar_palette[loop.index0 % 11] }}">{{ row.team.name[:1] }}</span>
+      <div class="flex min-w-0 flex-1 flex-col justify-center gap-[0.5vh]">
+        <span class="truncate text-[2vh] font-black leading-tight text-slate-900" data-team-id="{{ row.team.id }}" data-field="name">{{ row.team.name }}</span>
+        <div class="bar-wrap flex h-[1vh] overflow-hidden rounded-full bg-slate-100" data-team-id="{{ row.team.id }}" data-field="bar" style="width: {{ ((row.total / champ_total * 100) if champ_total else 0)|round(1) }}%;">
+          <span class="seg-fill bg-[#2563EB]" data-seg="demand_vote" style="flex-grow: {{ row.demand_vote }};"></span>
+          <span class="seg-fill bg-[#7C3AED]" data-seg="peer_votes" style="flex-grow: {{ row.peer_votes }};"></span>
+          <span class="seg-fill bg-[#D97706]" data-seg="judge_score" style="flex-grow: {{ row.judge_score }};"></span>
         </div>
       </div>
-      <div class="flex shrink-0 items-baseline gap-[0.3vw]"><span class="text-[3.2vh] font-black leading-none text-zinc-900" data-team-id="{{ row.team.id }}" data-field="total">{{ row.total }}</span><span class="text-[1.2vh] font-semibold text-zinc-400">票</span></div>
+      <div class="flex shrink-0 items-baseline gap-[0.3vw]"><span class="text-[3vh] font-black leading-none text-slate-900" data-team-id="{{ row.team.id }}" data-field="total">{{ row.total }}</span><span class="text-[1.2vh] font-semibold text-slate-400">票</span></div>
     </div>
     {% endfor %}
   </div>
@@ -83,24 +96,24 @@
     document.querySelectorAll('[data-field="total"]'),
     function(el){ return el.getAttribute('data-team-id'); }
   ).join(',');
-  function setField(id, field, value){
+  function setText(id, field, value){
     var el = document.querySelector('[data-team-id="'+id+'"][data-field="'+field+'"]');
-    if(!el) return;
-    if(field === 'name'){ if(el.textContent !== value) el.textContent = value; return; }
-    if(field === 'demand_vote'){ el.textContent = '刚需 ' + value; return; }
-    if(field === 'peer_votes'){ el.textContent = '互评 ' + value; return; }
-    if(field === 'judge_score'){ el.textContent = '评委 ' + value; return; }
-    if(field === 'total'){
-      if(el.textContent != String(value)){
-        el.textContent = value;
-        el.classList.remove('pop-hi'); void el.offsetWidth; el.classList.add('pop-hi');
-      }
-  return;
+    if(el && el.textContent !== String(value)) el.textContent = value;
+  }
+  function setTotal(id, value){
+    var el = document.querySelector('[data-team-id="'+id+'"][data-field="total"]');
+    if(el && el.textContent != String(value)){
+      el.textContent = value;
+      el.classList.remove('pop-hi'); void el.offsetWidth; el.classList.add('pop-hi');
     }
   }
-  function setBar(id, pct){
-    var el = document.querySelector('[data-team-id="'+id+'"][data-field="bar"]');
-    if(el) el.style.width = pct + '%';
+  function setBar(id, pct, dv, pv, js){
+    var wrap = document.querySelector('[data-team-id="'+id+'"][data-field="bar"]');
+    if(!wrap) return;
+    wrap.style.width = pct + '%';
+    var segs = wrap.querySelectorAll('[data-seg]');
+    var map = {demand_vote: dv, peer_votes: pv, judge_score: js};
+    segs.forEach(function(s){ s.style.flexGrow = map[s.getAttribute('data-seg')]; });
   }
   function refresh(){
     fetch('/board/data', {cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
@@ -109,13 +122,14 @@
       if(newOrder !== initialOrder){ window.location.reload(); return; }
       var champTotal = rows.length ? rows[0].total : 0;
       rows.forEach(function(row){
-        setField(row.id, 'name', row.name);
-        setField(row.id, 'total', row.total);
-        setField(row.id, 'demand_vote', row.demand_vote);
-        setField(row.id, 'peer_votes', row.peer_votes);
-        setField(row.id, 'judge_score', row.judge_score);
+        setText(row.id, 'name', row.name);
+        setTotal(row.id, row.total);
+        setText(row.id, 'demand_vote', row.demand_vote);
+        setText(row.id, 'peer_votes', row.peer_votes);
+        setText(row.id, 'judge_score', row.judge_score);
         if(row.rank > 3){
-          setBar(row.id, champTotal ? Math.round(row.total / champTotal * 1000) / 10 : 0);
+          var pct = champTotal ? Math.round(row.total / champTotal * 1000) / 10 : 0;
+          setBar(row.id, pct, row.demand_vote, row.peer_votes, row.judge_score);
         }
       });
       var ref = document.getElementById('refreshedAt');
