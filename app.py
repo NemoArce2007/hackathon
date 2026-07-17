@@ -623,11 +623,13 @@ def leaderboard_state():
     rows = score_rows()
     top_teams = top_tied_teams()
     champion_id = get_setting("champion_team_id", "")
+    peer_locked = get_setting("peer_status", "not_started") == "locked"
+    needs_tie_break = peer_locked and len(top_teams) > 1 and not active_round() and not champion_id
     return {
         "rows": rows,
         "top_tied_teams": top_teams,
         "top_tied_ids": [team["id"] for team in top_teams],
-        "needs_tie_break": len(top_teams) > 1 and not active_round() and not champion_id,
+        "needs_tie_break": needs_tie_break,
         "champion_id": champion_id,
         "champion_confirmed_at": get_setting("champion_confirmed_at", ""),
     }
