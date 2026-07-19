@@ -130,7 +130,7 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         judge_id INTEGER NOT NULL REFERENCES judges(id) ON DELETE CASCADE,
         target_team_id INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-        vote INTEGER NOT NULL CHECK (vote IN (0, 1)),
+        vote INTEGER NOT NULL CHECK (vote IN (0, 1, 2)),
         entered_by_admin_open_id TEXT NOT NULL,
         updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
         UNIQUE (judge_id, target_team_id)
@@ -557,10 +557,11 @@ def score_rows():
         peer_count = get_db().execute(
             "SELECT COUNT(*) AS count FROM peer_votes WHERE target_team_id = ? AND vote = 1", (team["id"],)
         ).fetchone()["count"]
-        judge_approvals = get_db().execute(
-            "SELECT COUNT(*) AS count FROM judge_votes WHERE target_team_id = ? AND vote = 1", (team["id"],)
-        ).fetchone()["count"]
-        judge_score = judge_approvals * 2
+        judge_row = get_db().execute(
+            "SELECT COUNT(*) AS approvals, COALESCE(SUM(vote), 0) AS score FROM judge_votes WHERE target_team_id = ? AND vote > 0", (team["id"],)
+        ).fetchone()
+        judge_approvals = judge_row["approvals"]
+        judge_score = judge_row["score"]
         total = team["demand_vote"] + peer_count + judge_score
         tie_round_no, tie_votes = tie_rank.get(team["id"], (0, 0))
         rows.append({
@@ -1028,7 +1029,13 @@ def save_judge_votes():
     teams = ordered_teams()
     for judge in judges:
         for team in teams:
-            vote = 1 if request.form.get(f"judge_{judge['id']}_team_{team['id']}") == "1" else 0
+            raw = request.form.get(f"judge_{judge['id']}_team_{team['id']}", "0")
+            try:
+                vote = int(raw)
+            except (TypeError, ValueError):
+                vote = 0
+            if vote not in (0, 1, 2):
+                vote = 0
             get_db().execute(
                 """
                 INSERT INTO judge_votes (judge_id, target_team_id, vote, entered_by_admin_open_id)

@@ -276,7 +276,7 @@
 <section class="mt-6 rounded-2xl border border-line bg-white shadow-sm">
   <div class="border-b border-line p-5">
     <h2 class="text-xl font-bold">评委管理与评委票</h2>
-    <p class="mt-1 text-sm text-muted">支持新增、编辑、删除评委，并按评委逐队录入是否能上岗。</p>
+    <p class="mt-1 text-sm text-muted">支持新增、编辑、删除评委，并按评委逐队录入 0~2 票（每票直接计入总票）。</p>
   </div>
   <div class="space-y-5 p-5">
     <form action="{{ url_for('save_judge') }}" method="post" class="grid gap-3 text-sm sm:grid-cols-[140px_1fr_auto_auto]">
@@ -321,7 +321,8 @@
           <tr>
             <td class="px-4 py-4 font-semibold">#{{ team.order_index }} {{ team.name }}</td>
             {% for judge in judges %}
-            <td class="text-center"><input class="h-5 w-5 rounded" type="checkbox" name="judge_{{ judge.id }}_team_{{ team.id }}" value="1" {% if judge_votes.get((judge.id, team.id)) == 1 %}checked{% endif %}></td>
+            {% set jv = judge_votes.get((judge.id, team.id), 0) %}
+            <td class="text-center"><select name="judge_{{ judge.id }}_team_{{ team.id }}" class="rounded-lg border border-line px-2 py-1.5 text-sm font-semibold"><option value="0" {% if jv == 0 %}selected{% endif %}>0</option><option value="1" {% if jv == 1 %}selected{% endif %}>1</option><option value="2" {% if jv == 2 %}selected{% endif %}>2</option></select></td>
             {% endfor %}
           </tr>
           {% else %}
