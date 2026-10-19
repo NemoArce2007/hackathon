@@ -1,6 +1,6 @@
 <div align="center">
 
-<h3><img src="static/logo.svg" width="48" alt="句子互动" align="absmiddle" />&nbsp;句子互动</h3>
+<p><img src="static/logo.svg" width="96" alt="句子互动" align="absmiddle" />&nbsp;<img src="docs/brand.svg" height="80" alt="句子互动" align="absmiddle" /></p>
 
 <img src="docs/title.svg" width="600" alt="企业内部黑客松计分系统" />
 
