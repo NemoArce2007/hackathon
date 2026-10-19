@@ -2,9 +2,9 @@
 
 <h3><img src="static/logo.svg" width="48" alt="句子互动" align="absmiddle" />&nbsp;句子互动</h3>
 
-<img src="docs/title.svg" width="600" alt="企业内部黑客松积分系统" />
+<img src="docs/title.svg" width="600" alt="企业内部黑客松计分系统" />
 
-**为一场黑客松从开场到颁奖的全部环节而设计的实时积分系统**
+**为一场黑客松从开场到颁奖的全部环节而设计的实时计分系统**
 
 飞书一键登录 · 评委与互评双轨计分 · 实时大屏 · 平票决胜
 
