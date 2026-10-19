@@ -1,8 +1,8 @@
 <div align="center">
 
-<p><img src="static/logo.svg" width="56" alt="句子互动" align="absmiddle" />&nbsp;<b>句子互动</b></p>
+<h3><img src="static/logo.svg" width="48" alt="句子互动" align="absmiddle" />&nbsp;句子互动</h3>
 
-<h1>Hackathon Scoring System</h1>
+<h3>Hackathon Scoring System</h3>
 
 **为一场黑客松从开场到颁奖的全部环节而设计的实时计分系统**
 
