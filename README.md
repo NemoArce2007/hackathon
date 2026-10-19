@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="static/logo.svg" width="96" alt="logo" />
+<h2><img src="static/logo.svg" width="56" alt="句子互动" align="absmiddle" />&nbsp;句子互动</h2>
 
 # Hackathon Scoring System
 
