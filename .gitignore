@@ -1,0 +1,7 @@
+.env.local
+.env
+*.db
+__pycache__/
+.gh-cli/
+.claude/
+auth_qr.png
